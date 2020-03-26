@@ -1,0 +1,7 @@
+declare structure named address open-curly-brace
+    field named name of type string semicolon
+    field named street of type string semicolon
+    field named city of type string semicolon
+    field named state of type string semicolon
+    field named zip of type integer semicolon
+close-curly-brace

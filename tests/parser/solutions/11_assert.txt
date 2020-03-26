@@ -1,0 +1,8 @@
+BodyExp:
+  AssertExp:
+    CondExp:
+      LessExp:
+        ValExp:
+          val=5
+        ValExp:
+          val=6

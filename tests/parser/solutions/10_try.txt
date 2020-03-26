@@ -1,0 +1,11 @@
+BodyExp:
+  TryExp:
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: val=passed
+    Catch: id=e
+      BodyExp:
+        CallExp: func_id=print ret_id=None
+          Args:
+            Arg: val=failed

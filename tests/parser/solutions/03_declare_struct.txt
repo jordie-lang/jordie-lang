@@ -1,0 +1,8 @@
+BodyExp:
+  StructExp: id=address
+    Fields:
+      city: string
+      state: string
+      street: string
+      name: string
+      zip: integer

@@ -1,0 +1,40 @@
+BodyExp:
+  FuncExp: id=print_five type=nothing
+    Args:
+      Arg: type=nothing
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: val=5
+  FuncExp: id=add_numbers type=integer
+    Args:
+      Arg: type=integer
+      Arg: type=integer
+    BodyExp:
+      SetExp: id=sum field_id=
+        ValExp:
+          AddExp:
+            ValExp:
+              id=argument-one
+            ValExp:
+              id=argument-two
+      RetExp:
+        ValExp:
+          id=sum
+  FuncExp: id=print_two_numbers type=nothing
+    Args:
+      Arg: type=integer
+      Arg: type=integer
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: id=argument-one
+          Arg: kw=and
+          Arg: id=argument-two
+  FuncExp: id=get_five type=integer
+    Args:
+      Arg: type=nothing
+    BodyExp:
+      RetExp:
+        ValExp:
+          val=5

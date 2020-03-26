@@ -1,0 +1,18 @@
+BodyExp:
+  CallExp: func_id=print_five ret_id=None
+    Args:
+  CallExp: func_id=add_numbers ret_id=sum
+    Args:
+      Arg: id=number_one
+      Arg: kw=and
+      Arg: id=number_two
+  CallExp: func_id=print_two_numbers ret_id=None
+    Args:
+      Arg: id=number_one
+      Arg: kw=and
+      Arg: id=number_two
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: id=number_one
+  CallExp: func_id=get_five ret_id=number_five
+    Args:

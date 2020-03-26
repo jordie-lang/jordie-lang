@@ -1,0 +1,36 @@
+declare nonchangeable construct named number_one of type integer with value thirteen semicolon
+
+declare nonchangeable construct named number_two of type integer with value eighty-six semicolon
+
+declare nonchangeable construct named number_three of type integer  with value four-thousand-eight-hundred-sixty-seven semicolon
+
+declare changeable construct named sum of type integer semicolon
+
+declare changeable construct named counter of type integer with value zero semicolon
+
+declare changeable construct named number_four of type integer with value eighty-seven semicolon
+
+declare changeable construct named message_one of type string semicolon
+
+declare changeable construct named message_two of type string with value double-quote Hello There! double-quote semicolon
+
+declare nonchangeable construct named message_two of type string with value double-quote this is another example of a string value double-quote semicolon
+
+declare changeable construct named flag_one of type boolean with value true semicolon
+
+declare changeable construct named flag_two of type boolean with value false semicolon
+
+declare changeable construct named float_one of type float with value fourty-six-dot-seven-six-two semicolon
+
+declare changeable construct named float_two of type float with value six-dot-two semicolon
+
+declare changeable construct named float_three of type float with value four-dot-six-two semicolon
+
+declare changeable construct named float_four of type float with value one-dot-seven-five-four-three semicolon
+
+declare changeable construct named fruits of type list with value open-square-bracket double-quote double-quote five six-dot-five close-square-bracket semicolon
+
+declare changeable construct named facts of type dictionary with value 
+    open-curly-brace key double-quote vendor double-quote value double-quote cisco double-quote key double-quote os double-quote value double-quote ios double-quote close-curly-brace semicolon
+
+declare changeable construct named my_address of type address semicolon

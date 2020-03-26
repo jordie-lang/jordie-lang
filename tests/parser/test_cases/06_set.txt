@@ -1,0 +1,5 @@
+set construct named message_one with value double-quote Hello World! double-quote semicolon
+
+set construct named counter with value number_one semicolon
+
+set field named city of construct named my_address with value double-quote Hoboken double-quote semicolon

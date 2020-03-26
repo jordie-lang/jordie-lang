@@ -1,0 +1,4 @@
+Tokens:
+('kw', 'retrieve')
+('id', 'fib')
+('kw', 'semicolon')

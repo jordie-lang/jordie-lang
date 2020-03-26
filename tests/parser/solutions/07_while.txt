@@ -1,0 +1,20 @@
+BodyExp:
+  WhileExp:
+    CondExp:
+      EqualExp:
+        OrExp:
+          GreaterExp:
+            ValExp:
+              id=counter
+            ValExp:
+              val=0
+          ValExp:
+            id=counter
+        ValExp:
+          val=0
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: id=counter
+      BreakExp
+      JumpExp

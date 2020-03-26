@@ -1,0 +1,9 @@
+if number_six is equal to six or number_six is less than six run the following open-curly-brace
+    call functional construct named print and pass in double-quote if was true double-quote semicolon
+close-curly-brace
+or if number_six is greater than six and true run the following open-curly-brace
+    call functional construct named print and pass in double-quote else if was true double-quote semicolon
+close-curly-brace
+or run the following open-curly-brace
+    call functional construct named print and pass in double-quote else case double-quote semicolon
+close-curly-brace

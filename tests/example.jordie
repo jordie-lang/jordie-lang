@@ -1,0 +1,137 @@
+comment testing context comment
+
+comment
+
+testing file
+
+comment
+
+comment this is an example file 
+for jordie-lang comment
+
+comment this   is another    comment
+
+comment import a module comment
+retrieve source from file named fib semicolon 
+
+comment defining constants which need a type and value comment
+declare nonchangeable construct named number_one of type integer with value thirteen semicolon
+declare nonchangeable construct named number_two of type integer with value eighty-six semicolon
+declare nonchangeable construct named number_three of type integer  with value four-thousand-eight-hundred-sixty-seven semicolon
+
+comment defining variables which need a type but don't need value comment
+declare changeable construct named sum of type integer semicolon
+declare changeable construct named counter of type integer with value zero semicolon
+declare changeable construct named number_four of type integer with value eighty-seven semicolon
+
+comment defining string varaibles and constants comment
+declare changeable construct named message_one of type string semicolon
+declare changeable construct named message_two of type string with value double-quote Hello There! double-quote semicolon
+declare nonchangeable construct named message_two of type string with value double-quote this is another example of a string value double-quote semicolon
+
+comment defining boolean variables comment
+declare changeable construct named flag_one of type boolean with value true semicolon
+declare changeable construct named flag_two of type boolean with value false semicolon
+
+comment defining float variable comment
+declare changeable construct named float_one of type float with value fourty-six-dot-seven-six-two semicolon
+
+declare changeable construct named float_two of type float with value six-dot-two semicolon
+declare changeable construct named float_three of type float with value four-dot-six-two semicolon
+declare changeable construct named float_four of type float with value one-dot-seven-five-four-three semicolon
+
+comment defining list variable comment
+declare changeable construct named fruits of type list with value open-square-bracket double-quote double-quote five six-dot-five close-square-bracket semicolon
+
+comment defining dictionary variable comment
+declare changeable construct named facts of type dictionary with value 
+    open-curly-brace key double-quote vendor double-quote value double-quote cisco double-quote key double-quote os double-quote value double-quote ios double-quote close-curly-brace semicolon
+
+comment setting variable value comment
+set construct named message_one with value double-quote Hello World! double-quote semicolon
+set construct named counter with value number_one semicolon
+
+comment structs comment
+declare structure named address open-curly-brace
+    field named name of type string semicolon
+    field named street of type string semicolon
+    field named city of type string semicolon
+    field named state of type string semicolon
+    field named zip of type integer semicolon
+close-curly-brace
+declare changeable construct named my_address of type address semicolon
+set field named city of construct named my_address with value double-quote Hoboken double-quote semicolon
+
+declare changeable construct named counter of type integer with value ten semicolon
+while counter is greater than zero or counter is equal to zero run the following open-curly-brace
+    call functional construct named print and pass in counter semicolon
+    break out of loop semicolon
+    jump to next iteration semicolon
+close-curly-brace
+
+for every item in the construct named fruits do the following open-curly-brace
+    call functional construct named print and pass in item semicolon
+    break out of loop semicolon
+    jump to next iteration semicolon
+close-curly-brace
+
+comment function that takes no parameters and returns nothing comment
+declare functional construct named print_five which returns nothing and receives nothing open-curly-brace
+    call functional construct named print and pass in five semicolon
+close-curly-brace
+
+comment calling function that takes no parameters and returns nothing comment
+call functional construct named print_five semicolon
+
+comment function that takes two integers as parameters and returns an integer comment
+declare functional construct named add_numbers which returns type integer and receives type integer and type integer open-curly-brace
+    set construct named sum with value argument-one plus argument-two semicolon
+    return value sum semicolon
+    comment you could also do something like this - return value five comment
+close-curly-brace
+
+comment calling function that returns an integer to a varaible named sum and takes in two values number_one and number_two comment
+call functional construct named add_numbers and pass in number_one and number_two and return value to construct named sum semicolon
+
+comment function that takes in two parameters and returns nothing comment
+declare functional construct named print_two_numbers which returns nothing and receives type integer and type integer open-curly-brace
+    call functional construct named print and pass in argument-one and argument-two semicolon
+close-curly-brace
+
+comment calling function that takes two parameters and does not return a value comment
+call functional construct named print_two_numbers and pass in number_one and number_two semicolon
+
+comment calling function that takes a single parameter and does not return a value comment
+call functional construct named print and pass in number_one semicolon
+
+comment defining a variable named number_five and a function that takes no parameters and return an integer comment
+declare changeable construct named number_five of type integer semicolon
+declare functional construct named get_five which returns type integer and receives nothing open-curly-brace
+    return value five semicolon
+close-curly-brace
+
+comment calling function to return a value but not take in any arguments comment
+call functional construct named get_five and return value to construct named number_five semicolon
+
+comment conditional statement comment
+declare changeable construct named number_six of type integer with value six semicolon
+if number_six is equal to six or number_six is less than six run the following open-curly-brace
+    call functional construct named print and pass in double-quote if was true double-quote semicolon
+close-curly-brace
+or if number_six is greater than six and true run the following open-curly-brace
+    call functional construct named print and pass in double-quote else if was true double-quote semicolon
+close-curly-brace
+or run the following open-curly-brace
+    call functional construct named print and pass in double-quote else case double-quote semicolon
+close-curly-brace
+
+try to run the following open-curly-brace
+    call functional construct named print and pass in double-quote passed double-quote semicolon
+close-curly-brace
+catch error named e and run the following open-curly-brace
+    call functional construct named print and pass in double-quote failed double-quote semicolon
+close-curly-brace
+
+assert that five is less than six semicolon
+
+exit

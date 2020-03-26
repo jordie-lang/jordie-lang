@@ -1,0 +1,8 @@
+BodyExp:
+  ForExp: id=fruits
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: id=item
+      BreakExp
+      JumpExp

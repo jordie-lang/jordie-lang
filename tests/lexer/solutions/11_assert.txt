@@ -1,0 +1,6 @@
+Tokens:
+('kw', 'assert')
+('val', 5)
+('op', 'is less than')
+('val', 6)
+('kw', 'semicolon')
