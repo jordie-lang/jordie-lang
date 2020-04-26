@@ -428,6 +428,8 @@ def kw_declare(source_string):
                                 if(tmp_elem == eol):
                                     tmp_tokens.append(("kw", eol))
                                 else:
+                                    print(tmp_tokens)
+                                    print(tmp_val)
                                     lex_error("Error 1: Expected EOL.")
                             else:
                                 lex_error("Error 2: Expected value.")

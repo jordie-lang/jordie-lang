@@ -1,19 +1,70 @@
 BodyExp:
-  DeclareExp: id=number_one const=False type=integer value=13
-  DeclareExp: id=number_two const=False type=integer value=86
-  DeclareExp: id=number_three const=False type=integer value=4867
-  DeclareExp: id=sum const=True type=integer value=None
-  DeclareExp: id=counter const=True type=integer value=0
-  DeclareExp: id=number_four const=True type=integer value=87
-  DeclareExp: id=message_one const=True type=string value=None
-  DeclareExp: id=message_two const=True type=string value=Hello There!
-  DeclareExp: id=message_two const=False type=string value=this is another example of a string value
-  DeclareExp: id=flag_one const=True type=boolean value=True
-  DeclareExp: id=flag_two const=True type=boolean value=False
-  DeclareExp: id=float_one const=True type=float value=46.762
-  DeclareExp: id=float_two const=True type=float value=6.2
-  DeclareExp: id=float_three const=True type=float value=4.62
-  DeclareExp: id=float_four const=True type=float value=1.7543
-  DeclareExp: id=fruits const=True type=list value=['double-quote five six-dot-five', 5, 6.5]
-  DeclareExp: id=facts const=True type=dictionary value={'os': 'ios', 'vendor': 'cisco'}
-  DeclareExp: id=my_address const=True type=address value=None
+  DeclareExp: id=number_one const=False type=integer
+    Value:
+      ValExp:
+        val=13
+  DeclareExp: id=number_two const=False type=integer
+    Value:
+      ValExp:
+        val=86
+  DeclareExp: id=number_three const=False type=integer
+    Value:
+      ValExp:
+        val=4867
+  DeclareExp: id=sum const=True type=integer
+    Value:
+      None
+  DeclareExp: id=counter const=True type=integer
+    Value:
+      ValExp:
+        val=0
+  DeclareExp: id=number_four const=True type=integer
+    Value:
+      ValExp:
+        val=87
+  DeclareExp: id=message_one const=True type=string
+    Value:
+      None
+  DeclareExp: id=message_two const=True type=string
+    Value:
+      ValExp:
+        val=Hello There!
+  DeclareExp: id=message_two const=False type=string
+    Value:
+      ValExp:
+        val=this is another example of a string value
+  DeclareExp: id=flag_one const=True type=boolean
+    Value:
+      ValExp:
+        val=True
+  DeclareExp: id=flag_two const=True type=boolean
+    Value:
+      ValExp:
+        val=False
+  DeclareExp: id=float_one const=True type=float
+    Value:
+      ValExp:
+        val=46.762
+  DeclareExp: id=float_two const=True type=float
+    Value:
+      ValExp:
+        val=6.2
+  DeclareExp: id=float_three const=True type=float
+    Value:
+      ValExp:
+        val=4.62
+  DeclareExp: id=float_four const=True type=float
+    Value:
+      ValExp:
+        val=1.7543
+  DeclareExp: id=fruits const=True type=list
+    Value:
+      ValExp:
+        val=['double-quote five six-dot-five', 5, 6.5]
+  DeclareExp: id=facts const=True type=dictionary
+    Value:
+      ValExp:
+        val={'os': 'ios', 'vendor': 'cisco'}
+  DeclareExp: id=my_address const=True type=address
+    Value:
+      None

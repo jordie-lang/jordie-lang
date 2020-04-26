@@ -1,0 +1,27 @@
+declare changeable construct named message of type string with value double-quote Hello There!\n double-quote semicolon
+
+call functional construct named print and pass in double-quote Printing Message: double-quote semicolon
+call functional construct named print and pass in mesage semicolon
+
+declare changeable construct named number_one of type integer with value five semicolon
+
+declare changeable construct named number_two of type integer with value eight semicolon
+
+declare functional construct named add_numbers which returns type integer and receives type integer and type integer open-curly-brace
+    declare changeable construct named sum of type integer with value argument-one plus argument-two semicolon
+    return value sum semicolon
+close-curly-brace
+comment
+declare changeable construct named number_three of type integer semicolon
+
+call functional construct named add_numbers and pass in number_one and number_two and return value to construct named number_three semicolon
+
+call functional construct named print and pass in double-quote Sum:  double-quote semicolon
+call functional construct named print and pass in number_three converted to string semicolon
+call functional construct named print and pass in double-quote \n double-quote semicolon
+
+
+
+need to make sure tokens are 100%, still parsing some as ("val", ("id", "argument-one")), need to have better handling of value expressions, both in lexer and parser
+
+comment

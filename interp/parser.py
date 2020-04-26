@@ -5,6 +5,29 @@ AST:
 
 
 """
+import json
+from jordie_std import *
+
+def deepcopy(foo):
+    if type(foo) == "list":
+        lst = []
+        for i in foo:
+            if type(i) == "list" or type(i) == "dict":
+                lst.append(deepcopy(i))
+            else:
+                lst.append(i)
+        return lst
+    elif type(foo) == "dict":
+        dct = {}
+        for k in foo.keys():
+            if type(foo[k]) == "list" or type(foo[k]) == "dict":
+                dct[k] = deepcopy(foo[k])
+            else:
+                dct[k] = foo[k]
+        return dct
+    else:
+        parse_error("")
+
 
 test_tokens = [
     ('kw', 'declare'),
@@ -36,6 +59,7 @@ class Exp():
         return "GET EXP STRING"
 
     def execute(self):
+        exit(0)
         return "RUN EXP"
 
 def get_next_val_exp(tok_list):
@@ -99,17 +123,30 @@ class ValExp(Exp):
         elif self.is_id:
             exp_str += "{}id={}\n".format("  "*(level+1), self.v_head)
         else:
+            print(self.v_head)
+            print(self.val_tokens)
             exp_str += self.v_head.print_exp(level+1)
         return exp_str
     
-    def execute(self):
-        return "RUN VAL EXP"
+    def execute(self, env):
+        #print("VALVALVALVALVALVALVAL")
+        #print(self.v_head)
+        #print(self.is_val)
+        #print(self.is_id)
+        if self.is_val:
+            return self.v_head
+        elif self.is_id:
+            if not self.v_head in env["vars"].keys():
+                execute_error("unknown construct named {}".format(self.v_head))
+            return env["vars"][self.v_head]
+        else:
+            return self.v_head.execute(env)
 
 def get_next_cond_exp(tok_list):
     #if there is an operator
-    op_prec_list.reverse()
+    if op_prec_list[0][0] != "or":
+        op_prec_list.reverse()
     for ops in op_prec_list:
-        ops.reverse()
         for op in ops:
             cnt = 0
             for token in tok_list:
@@ -177,6 +214,7 @@ class MultExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN MULT EXP"
 
 class DivExp(Exp):
@@ -198,6 +236,7 @@ class DivExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN DIV EXP"
 
 class AddExp(Exp):
@@ -218,8 +257,26 @@ class AddExp(Exp):
         exp_str += self.right_exp.print_exp(level+1)
         return exp_str
     
-    def execute(self):
-        return "RUN ADD EXP"
+    def execute(self, env):
+        #print("ADDADDADDADDADD")
+        #print(self.left_exp)
+        #print(self.right_exp)
+        l_val = self.left_exp.execute(env)
+        r_val = self.right_exp.execute(env)
+        #print("++++++++++++++++++++++++++")
+        #print(l_val)
+        if l_val[0] == "id":
+            l_val = env["vars"][l_val[1]]["value"]
+        else:
+            l_val = l_val[1]
+        #print(r_val)
+        if r_val[0] == "id":
+            r_val = env["vars"][r_val[1]]["value"]
+        else:
+            r_val = r_val[1]
+        #print(l_val)
+        #print(r_val)
+        return l_val + r_val
 
 class SubExp(Exp):
     def __init__(self, _left, _right):
@@ -240,6 +297,7 @@ class SubExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN SUB EXP"
 
 class EqualExp(Exp):
@@ -261,6 +319,7 @@ class EqualExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN EQUAL EXP"
 
 class GreaterExp(Exp):
@@ -282,6 +341,7 @@ class GreaterExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN GREATER EXP"
 
 class LessExp(Exp):
@@ -303,6 +363,7 @@ class LessExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN LESS EXP"
 
 class NotExp(Exp):
@@ -320,6 +381,7 @@ class NotExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN NOT EXP"
 
 class AndExp(Exp):
@@ -341,6 +403,7 @@ class AndExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN AND EXP"
 
 class OrExp(Exp):
@@ -362,23 +425,25 @@ class OrExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN OR EXP"
 
 class CondExp(Exp):
     def __init__(self, _cond):
-        self.c_exp = _cond
-        self.c_heaad = None
+        self.c_tokens = _cond
+        self.c_exp = None
     
     def build_cond_tree(self):
-        self.c_head = get_next_cond_exp(self.c_exp)
+        self.c_exp = get_next_cond_exp(self.c_tokens)
 
     def print_exp(self, level):
         exp_str = ""
         exp_str += "{}CondExp:\n".format("  "*level)
-        exp_str += self.c_head.print_exp(level+1)
+        exp_str += self.c_exp.print_exp(level+1)
         return exp_str
 
     def execute(self):
+        exit(0)
         return "RUN COND EXP"
 
 class BodyExp(Exp):  # DONE
@@ -395,11 +460,16 @@ class BodyExp(Exp):  # DONE
             exp_str += exp.print_exp(level+1)
         return exp_str
     
-    def execute(self):
+    def execute(self, env):
         for exp in self.exp_list:
-            exp.execute()
+            #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            #print(env)
+            env = exp.execute(env)
+        #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        #print(env)
+        return env
 
-class StructExp(Exp):
+class StructExp(Exp): # DONE
     def __init__(self, _id, _e_fields):
         self.e_id = _id
         self.e_fields = _e_fields
@@ -412,10 +482,13 @@ class StructExp(Exp):
             exp_str += "{}{}: {}\n".format("  "*(level+2), field, self.e_fields[field])
         return exp_str
     
-    def execute(self):
-        return "RUN STRUCT EXP"
+    def execute(self, env):
+        env["types"][self.e_id] = {}
+        for field in self.e_fields.keys():
+            env["types"][self.e_id][field] = self.e_fields[field]
+        return env
 
-class RetrieveExp(Exp):
+class RetrieveExp(Exp): # TODO
     def __init__(self, _id):
         self.e_id = _id
     
@@ -424,10 +497,10 @@ class RetrieveExp(Exp):
         exp_str += "{}RetrieveExp: id={}\n".format("  "*level, self.e_id)
         return exp_str
     
-    def execute(self):
-        return "RUN RETRIEVE EXP"
+    def execute(self, env):
+        return env
 
-class DeclareExp(Exp):
+class DeclareExp(Exp): # DONE
     def __init__(self, _id, _const, _type, _value=None):
         self.e_id = _id
         self.e_const = _const
@@ -436,13 +509,22 @@ class DeclareExp(Exp):
     
     def print_exp(self, level):
         exp_str = ""
-        exp_str += "{}DeclareExp: id={} const={} type={} value={}\n".format("  "*level, self.e_id, self.e_const, self.e_type, self.e_val)
+        exp_str += "{}DeclareExp: id={} const={} type={}\n".format("  "*level, self.e_id, self.e_const, self.e_type)
+        exp_str += "{}Value:\n".format("  "*(level+1))
+        if self.e_val:
+            exp_str += self.e_val.print_exp(level+2)
+        else:
+            exp_str += "{}{}\n".format("  "*(level+2), self.e_val)
         return exp_str
     
-    def execute(self):
-        return "RUN DECLARE EXP"
+    def execute(self, env):
+        #print("DECLAREDECLAREDECLAREDECLARE")
+        #print(self.e_id)
+        if self.e_val:
+            env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": self.e_val.execute(env)}
+        return env
 
-class SetExp(Exp):
+class SetExp(Exp): # DONE
     def __init__(self, _id, _val, _field_id):
         self.e_id = _id
         self.e_val = _val
@@ -454,8 +536,76 @@ class SetExp(Exp):
         exp_str += self.e_val.print_exp(level+1)
         return exp_str
     
-    def execute(self):
-        return "TODO"
+    def execute(self, env):
+        #print("SETSETSETSETEST")
+        # ensure target id is in env
+        if not self.e_id in env["vars"].keys():
+            execute_error("unknown construct: {}".format(self.e_id))
+
+        # evaluate val exp
+        tmp_val = self.e_val.execute(env)
+        #print(tmp_val)
+        if self.e_field_id:
+            #set field of struct
+            f_type = env["vars"][self.e_id]["value"][self.e_field_id]["type"]
+            if not check_jordie_types(tmp_val, f_type):
+                execute_error("invalid type 1")
+            else:
+                env["vars"][self.e_id]["value"][self.e_field_id]["value"] = tmp_val
+        else:
+            #set regular var
+            v_type = env["vars"][self.e_id]["type"]
+            #print(v_type)
+            #print(type(tmp_val))
+            if not check_jordie_types(tmp_val, v_type):
+                execute_error("invalid type 2")
+            else:
+                env["vars"][self.e_id]["value"] = tmp_val
+        #print("DONEDONE")
+        return env
+
+def check_jordie_types(foo, f_type):
+    if f_type == "integer":
+        if type(foo) == int:
+            return True
+        else:
+            return False
+    elif f_type == "float":
+        if type(foo) == float:
+            return True
+        else:
+            return False
+    elif f_type == "string":
+        if type(foo) == str:
+            return True
+        else:
+            return False
+    elif f_type == "list":
+        if type(foo) == list:
+            return True
+        else:
+            return False
+    elif f_type == "dictionary":
+        if type(foo) == dict:
+            return True
+        else:
+            return False
+    else:
+        execute_error("unknown type")
+
+def get_jordie_type(foo):
+    if type(foo) == int:
+        return "integer"
+    elif type(foo) == float:
+        return "float"
+    elif type(foo) == str:
+        return "string"
+    elif type(foo) == list:
+        return "list"
+    elif type(foo) == dict:
+        return "dictionary"
+    else:
+        execute_error("unknown type")
 
 class WhileExp(Exp):
     def __init__(self, _cond, _body):
@@ -470,9 +620,10 @@ class WhileExp(Exp):
         return exp_str
 
     def execute(self):
+        exit(0)
         return "RUN WHILE EXP"
 
-class CallExp(Exp):
+class CallExp(Exp): # DONE
     def __init__(self, _f_id, _args, _ret_id):
         self.f_id = _f_id
         self.f_args = _args
@@ -482,12 +633,103 @@ class CallExp(Exp):
         exp_str = ""
         exp_str += "{}CallExp: func_id={} ret_id={}\n".format("  "*level, self.f_id, self.f_ret)
         exp_str += "{}Args:\n".format("  "*(level+1))
-        for arg in self.f_args:
-            exp_str += "{}Arg: {}={}\n".format("  "*(level+2), arg[0], arg[1])
+        if self.f_args:
+            for arg in self.f_args.keys():
+                exp_str += "{}Arg: {}={}\n".format("  "*(level+2), arg, self.f_args[arg])
+        else:
+            exp_str += "{}None\n".format("  "*(level+2))
         return exp_str
     
-    def execute(self):
-        return "RUN CALL EXP"
+    def execute(self, env):
+        print("***********************")
+        print(self.f_id)
+        print(self.f_args)
+        print(env)
+        # check function exists
+        if not self.f_id in env["funcs"].keys():
+            #invalid function identifier
+            execute_error("invalid function name")
+        
+        # check args are correct types and add to env
+        for arg in env["funcs"][self.f_id]["args"].keys():
+            # arg = "argument-1"
+            tmp_arg = self.f_args[arg]
+            arg_type = ""
+            arg_val = None
+            if tmp_arg[0] == "id":
+                if tmp_arg[1] in env["vars"].keys():
+                    print("I WILL FIND HIM LARA")
+                    print(env["vars"][tmp_arg[1]])
+                    arg_val = env["vars"][tmp_arg[1]]["value"]
+
+                    arg_type = env["vars"][tmp_arg[1]]["type"]
+                else:
+                    execute_error("argument {} not defined".format(tmp_arg[1]))
+            elif tmp_arg[0] == "val":
+                arg_val = tmp_arg[1]
+                arg_type = get_jordie_type(arg_val)
+            else:
+                execute_error("invalid arg format")
+            #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            #print(arg_val)
+            #print(arg_type)
+            if arg_type != env["funcs"][self.f_id]["args"][arg] and env["funcs"][self.f_id]["args"][arg] != "any":
+                execute_error("invalid arg type")
+
+            # add args to env
+            env["vars"][arg] = {"type": arg_type, "const": True, "value": arg_val}
+
+
+        # check if function is in std lib or user defined
+        if env["funcs"][self.f_id]["body"]:
+            #print("111111111111111111111111111")
+            # ensure no ret id is set
+            #print("888888888888888888888888888")
+            #print(env)
+            if env["cur_ret_id"]:
+                execute_error("ret id already set")
+
+            # add args to env
+            for arg in self.f_args.keys():
+                env["vars"][arg] = self.f_args[arg]
+
+            # add ret id to env
+            if self.f_ret:
+                env["cur_ret_id"] = self.f_ret
+
+            # run user function and return val
+            #print("@@@@@@@@@@@@@@@@@@@@@@@@@")
+            #print(env)
+            #print(env["funcs"][self.f_id]["body"].print_exp(0))
+            env = env["funcs"][self.f_id]["body"].execute(env)
+            #print(env)
+            #print("@*@*@@*@*@*@**@*@*@*@*@*@*@")
+
+            # remove ret id to env
+            if self.f_ret:
+                env["cur_ret_id"] = ""
+
+            # return value
+            #print("FINISED HERE")
+        else:
+            print("222222222222222222222222")
+            print(env)
+            print("########################")
+            #print("@@@@@@@@@@@@@@@@@@@@@@@2")
+            #print(self.f_ret)
+            # check if ret id is in env
+            if self.f_ret:
+                if not self.f_ret in env["vars"].keys():
+                    execute_error("ret id doesn't exist")
+
+            # run std lib function and return val
+            ret_val = env["funcs"][self.f_id]["fnc"](self.f_args.values())
+            env["vars"][self.f_ret] = ret_val
+        
+        # remove args from env
+        
+        print(env)
+        return env
 
 class BreakExp(Exp):
     def __init__(self):
@@ -499,6 +741,7 @@ class BreakExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN BREAK EXP"
 
 class JumpExp(Exp):
@@ -511,6 +754,7 @@ class JumpExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN JUMP EXP"
 
 class ForExp(Exp):
@@ -525,9 +769,10 @@ class ForExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN FOR EXP"
 
-class FuncExp(Exp):
+class FuncExp(Exp): # DONE
     def __init__(self, _id, _type, _args, _body):
         self.f_id = _id
         self.f_type = _type
@@ -538,13 +783,21 @@ class FuncExp(Exp):
         exp_str = ""
         exp_str += "{}FuncExp: id={} type={}\n".format("  "*level, self.f_id, self.f_type)
         exp_str += "{}Args:\n".format("  "*(level+1))
-        for arg in self.f_args:
-            exp_str += "{}Arg: {}={}\n".format("  "*(level+2), arg[0], arg[1])
+        if self.f_args:
+            for arg in self.f_args.keys():
+                exp_str += "{}Arg: {}={}\n".format("  "*(level+2), arg, self.f_args[arg])
+        else:
+            exp_str += "{}None\n".format("  "*(level+2))
         exp_str += self.f_body.print_exp(level+1)
         return exp_str
     
-    def execute(self):
-        return "RUN FUNC EXP"
+    def execute(self, env):
+        #print("((((((((((((((((((((((((((((")
+        #print(env)
+        #print(self.f_id)
+        #print(self.f_args)
+        env["funcs"][self.f_id] = {"type": self.f_type, "args": self.f_args, "body": self.f_body, "fnc": None}
+        return env
 
 class RetExp(Exp):
     def __init__(self, _val):
@@ -556,8 +809,16 @@ class RetExp(Exp):
         exp_str += self.r_val.print_exp(level+1)
         return exp_str
     
-    def execute(self):
-        return "RUN FUNC EXP"
+    def execute(self, env):
+        #print("RETRETRETRETRETRET")
+        tmp_val = self.r_val.execute(env)
+        #print(tmp_val)
+        # check for cur ret id
+        if not env["cur_ret_id"]:
+            execute_error("no return id")
+        
+        env["vars"]["cur_ret_id"] = tmp_val
+        return env
 
 class IfExp(Exp):
     def __init__(self, _conds, _bodys, _else):
@@ -582,6 +843,7 @@ class IfExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN IF EXP"
 
 class TryExp(Exp):
@@ -599,6 +861,7 @@ class TryExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN TRY EXP"
 
 class AssertExp(Exp):
@@ -612,6 +875,7 @@ class AssertExp(Exp):
         return exp_str
 
     def execute(self):
+        exit(0)
         return "RUN ASSERT EXP"
 
 class ExitExp(Exp):
@@ -624,6 +888,7 @@ class ExitExp(Exp):
         return exp_str
     
     def execute(self):
+        exit(0)
         return "RUN EXIT EXP"
 
 def pop_token(token_list):
@@ -653,7 +918,7 @@ def get_next_exp(token_list):
             #declare function
             f_id = ""
             f_type = ""
-            f_args = []
+            f_args = {}
             f_body = None
             
             token, token_list = pop_token(token_list)
@@ -675,12 +940,20 @@ def get_next_exp(token_list):
             token, token_list = pop_token(token_list)
             if token == ("kw", "receives"):
                 token, token_list = pop_token(token_list)
-                while(not token == ("kw", "open-curly-brace")):
-                    if token[0] == "type":
-                        f_args.append(token)
-                    else:
-                        parse_error("")
+                if token == ("type", "nothing"):
+                    f_args = {}
                     token, token_list = pop_token(token_list)
+                    if not token == ("kw", "open-curly-brace"):
+                        parse_error("")
+                else:
+                    cnt = 1 # argument-1, change to be argument-one later
+                    while(not token == ("kw", "open-curly-brace")):
+                        if token[0] == "type":
+                            f_args["argument-{}".format(str(cnt))] = token[1]
+                        else:
+                            parse_error("")
+                        token, token_list = pop_token(token_list)
+                        cnt += 1
             else:
                 parse_error("")
             #print("$$$$$$$$")
@@ -701,9 +974,9 @@ def get_next_exp(token_list):
             #print("FORTRAN")
             return (FuncExp(f_id, f_type, f_args, f_body), token_list)
         elif token == ("kw", "changeable"):
-            t_const = True
-        elif token == ("kw", "nonchangeable"):
             t_const = False
+        elif token == ("kw", "nonchangeable"):
+            t_const = True
         elif token == ("kw", "structure"):
             t_id = ""
             t_fields = {}
@@ -755,16 +1028,16 @@ def get_next_exp(token_list):
             parse_error("eee3")
         token, token_list = pop_token(token_list)
         if token == ("kw", "semicolon"):
-            return (DeclareExp(t_id, t_const, t_type), token_list)
-        elif token[0] == "val":
-            t_val = token[1]
-            token, token_list = pop_token(token_list)
-            if token == ("kw", "semicolon"):
-                return (DeclareExp(t_id, t_const, t_type, t_val), token_list)
-            else:
-                parse_error("eee3.5")
+            t_val = ValExp([("val", None)])
+            t_val.build_tree()
+            return (DeclareExp(t_id, t_const, t_type, t_val), token_list)
         else:
-            parse_error("eee4")
+            tmp_tokens = []
+            while token != ("kw", "semicolon"):
+                tmp_tokens.append(token)
+                token, token_list = pop_token(token_list)
+            t_val = get_next_val_exp(tmp_tokens)
+            return (DeclareExp(t_id, t_const, t_type, t_val), token_list)
     elif token == ("kw", "set"):
         #print("Set")
         t_id = ""
@@ -818,7 +1091,7 @@ def get_next_exp(token_list):
     elif token == ("kw", "call"):
         #print("Call")
         func_id = None
-        args = []
+        args = {}
         ret_id = None
         
         token, token_list = pop_token(token_list)
@@ -834,9 +1107,16 @@ def get_next_exp(token_list):
                 return (CallExp(func_id, args, ret_id), token_list)
             elif token == ("kw", "pass"):
                 token, token_list = pop_token(token_list)
+                cnt = 1 # another spot to update arg names
                 while(not (token == ("kw", "return") or token == ("kw", "semicolon"))):
-                    args.append(token)
-                    token, token_list = pop_token(token_list)
+                    if token == ("kw", "and"):
+                        # this is where i would make a change to allow expressions inside call params
+                        # nop
+                        token, token_list = pop_token(token_list)
+                    else:
+                        args["argument-{}".format(str(cnt))] = token
+                        token, token_list = pop_token(token_list)
+                        cnt += 1
                 if token == ("kw", "return"):
                     token, token_list = pop_token(token_list)
                     if token[0] == "id":
@@ -922,7 +1202,6 @@ def get_next_exp(token_list):
             token, token_list = pop_token(token_list)
         cond_exp = CondExp(cond_tokens)
         cond_exp.build_cond_tree()
-
         body_exp = BodyExp()
         while(not token == ("kw", "close-curly-brace")):
             next_exp, token_list = get_next_exp(token_list)
@@ -1023,12 +1302,12 @@ def get_next_exp(token_list):
         #print("Exit")
         return (ExitExp(), token_list)
     else:
-        #print(token)
         parse_error("Unknown Exp: YEETO")
 
 class AST:
     def __init__(self):
         self.head = BodyExp()
+        self.env = {}
 
     def add_tokens(self, token_list):
         while(token_list):
@@ -1045,15 +1324,42 @@ class AST:
     def get_tree_str(self):
         return self.head.print_exp(0)
 
+    def setup_env(self):
+        self.env = {
+            "vars": {
+                "jordie-name": {"type": "string", "value": ""}
+            },
+            "funcs": {
+                "print": {"args": {"argument-1": "any"}, "body": None, "fnc": jordie_print}
+            },
+            "types": {
+                "integer": {},
+                "float": {},
+                "string": {},
+                "list": {},
+                "dictionary": {}
+            },
+            "cur_ret_id": ""
+        }
+        return self.env
+
     def execute(self):
         # probably need to setup environment for vars and builtins and such here before executing, maybe pass in the env and return the envs back as an execution stack
         print("***** AST *****")
         self.print_tree()
-        print("***** RUN *****")
-        self.head.execute()
+        print("***** START ENV *****")
+        self.setup_env()
+        print(self.env)
+        print("***** END ENV *****")
+        ret_val, self.env = self.head.execute(self.env)
+        print(self.env)
 
 def parse_error(error_msg):
     print(error_msg)
+    exit(0)
+
+def execute_error(error_msg):
+    print("Execution Error: {}".format(error_msg))
     exit(0)
 
 def format_tree_output(ast):

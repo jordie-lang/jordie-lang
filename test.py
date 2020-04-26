@@ -1,5 +1,6 @@
 import interp
 import os
+import subprocess
 
 def test_lexer():
     print("#################### Testing Lexer ####################")
@@ -62,8 +63,10 @@ def test_execution():
     print("#################### Testing Execution ####################")
     lex_dir = "tests/execution"
     for fn in os.listdir(lex_dir + "/test_cases"):
-        if "02" in fn:
+        if "06" in fn:
             exit(0)
+        elif "01" in fn:
+            continue
         if fn.endswith(".txt"):
             test_case_file = lex_dir + "/test_cases/" + fn
             solution_file = lex_dir + "/solutions/" + fn
@@ -74,19 +77,14 @@ def test_execution():
                     test_case_source = tf.read()
                     tokens = interp.lexer.lex(test_case_source)
                     ast = interp.parser.parse(tokens)
+                    """
                     print("*********************** TMP *************************")
                     ast.execute()
                     print("*********************** TMP *************************")
-
                     """
-                    import subprocess
 
-                    proc = subprocess.Popen(["python", "-c", "import writer; writer.write()"], stdout=subprocess.PIPE)
-                    out = proc.communicate()[0]
-                    print out.upper()
-                    """
-                    exit(0)
-                    test_string = ast.get_tree_str().rstrip().replace("\r", "")
+                    test_exec = subprocess.Popen(["python", "jordie.py", test_case_file], stdout=subprocess.PIPE)
+                    test_string = test_exec.communicate()[0]
 
                     solution_string = sf.read().rstrip().replace("\r", "")
 
@@ -103,6 +101,6 @@ def test_execution():
 
 
 if __name__ == "__main__":
-    #test_lexer()
-    #test_parser()
+    test_lexer()
+    test_parser()
     test_execution()

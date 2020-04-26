@@ -1,0 +1,38 @@
+Env:
+
+As of right now, everything is global scope
+
+
+save an id from the body your currently in, use that to determine what to remove from scope after the execution
+
+
+***
+body env
+pass copy of body env into other bodies (function calls, loops, etc)
+whatever happens in that scope is limited there
+returns back a value
+
+body exp should return a value, None if no return type and return value otherwise
+***
+
+
+
+self.env = {
+    "vars": {
+        "jordie-name": {"type": "string", "const": True, "value": ""},
+        "address": {"type": "address", "value": {"city": {"type": "string", "value": "new york"}}}
+    },
+    "funcs": {
+        "print": {"type": "nothing", "args": {"message": "string"}, "body": None, "fnc": jordie-print},
+        "add_numbers": {"type": "integer", "args": {"argument-one": "integer", "argument-two": "integer"}, "body": <>, "fnc": None}
+    },
+    "types": {
+        "integer": {},
+        "float": {},
+        "string": {},
+        "list": {},
+        "dictionary": {},
+        "address": {"city": "string", "zip": "integer"}
+    },
+    "cur_ret_id": "sum"
+}
