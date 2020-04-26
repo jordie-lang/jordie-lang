@@ -5,7 +5,9 @@ import subprocess
 def test_lexer():
     print("#################### Testing Lexer ####################")
     lex_dir = "tests/lexer"
-    for fn in os.listdir(lex_dir + "/test_cases"):
+    fns = os.listdir(lex_dir + "/test_cases")
+    fns.sort()
+    for fn in fns:
         if fn.endswith(".txt"):
             test_case_file = lex_dir + "/test_cases/" + fn
             solution_file = lex_dir + "/solutions/" + fn
@@ -20,6 +22,9 @@ def test_lexer():
 
                     if test_string == solution_string:
                         print("Test case {} PASSED.".format(fn))
+                        print(test_case_source)
+                        print("\n")
+                        print(test_string)
                         print("\n")
                     else:
                         print("Test case {} FAILED.".format(fn))
@@ -32,7 +37,9 @@ def test_lexer():
 def test_parser():
     print("#################### Testing Parser ####################")
     lex_dir = "tests/parser"
-    for fn in os.listdir(lex_dir + "/test_cases"):
+    fns = os.listdir(lex_dir + "/test_cases")
+    fns.sort()
+    for fn in fns:
         if fn.endswith(".txt"):
             test_case_file = lex_dir + "/test_cases/" + fn
             solution_file = lex_dir + "/solutions/" + fn
@@ -62,7 +69,9 @@ def test_parser():
 def test_execution():
     print("#################### Testing Execution ####################")
     lex_dir = "tests/execution"
-    for fn in os.listdir(lex_dir + "/test_cases"):
+    fns = os.listdir(lex_dir + "/test_cases")
+    fns.sort()
+    for fn in fns:
         if "06" in fn:
             exit(0)
         elif "01" in fn:
@@ -102,5 +111,5 @@ def test_execution():
 
 if __name__ == "__main__":
     test_lexer()
-    test_parser()
-    test_execution()
+    #test_parser()
+    #test_execution()

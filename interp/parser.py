@@ -123,24 +123,21 @@ class ValExp(Exp):
         elif self.is_id:
             exp_str += "{}id={}\n".format("  "*(level+1), self.v_head)
         else:
-            print(self.v_head)
-            print(self.val_tokens)
+            #print(self.v_head)
+            #print(self.val_tokens)
             exp_str += self.v_head.print_exp(level+1)
         return exp_str
     
     def execute(self, env):
-        #print("VALVALVALVALVALVALVAL")
-        #print(self.v_head)
-        #print(self.is_val)
-        #print(self.is_id)
         if self.is_val:
-            return self.v_head
+            return self.v_head, env
         elif self.is_id:
             if not self.v_head in env["vars"].keys():
                 execute_error("unknown construct named {}".format(self.v_head))
-            return env["vars"][self.v_head]
+            return env["vars"][self.v_head], env
         else:
-            return self.v_head.execute(env)
+            ret_val, env = self.v_head.execute(env)
+            return ret_val, env
 
 def get_next_cond_exp(tok_list):
     #if there is an operator
@@ -446,7 +443,7 @@ class CondExp(Exp):
         exit(0)
         return "RUN COND EXP"
 
-class BodyExp(Exp):  # DONE
+class BodyExp(Exp):
     def __init__(self):
         self.exp_list = []
 
@@ -462,12 +459,8 @@ class BodyExp(Exp):  # DONE
     
     def execute(self, env):
         for exp in self.exp_list:
-            #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            #print(env)
-            env = exp.execute(env)
-        #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        #print(env)
-        return env
+            val, env = exp.execute(env)
+        return None, env
 
 class StructExp(Exp): # DONE
     def __init__(self, _id, _e_fields):
@@ -511,18 +504,25 @@ class DeclareExp(Exp): # DONE
         exp_str = ""
         exp_str += "{}DeclareExp: id={} const={} type={}\n".format("  "*level, self.e_id, self.e_const, self.e_type)
         exp_str += "{}Value:\n".format("  "*(level+1))
-        if self.e_val:
+        if self.e_val != None:
             exp_str += self.e_val.print_exp(level+2)
         else:
             exp_str += "{}{}\n".format("  "*(level+2), self.e_val)
         return exp_str
     
     def execute(self, env):
-        #print("DECLAREDECLAREDECLAREDECLARE")
-        #print(self.e_id)
-        if self.e_val:
-            env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": self.e_val.execute(env)}
-        return env
+        #print("YITE")
+        #print(env)
+        #print(self.e_val)
+        if self.e_val != None:
+            #print("YO")
+            val, env = self.e_val.execute(env)
+            #print(env)
+            #print(val)
+            env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": val}
+        else:
+            env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": None}
+        return None, env
 
 class SetExp(Exp): # DONE
     def __init__(self, _id, _val, _field_id):
@@ -641,10 +641,10 @@ class CallExp(Exp): # DONE
         return exp_str
     
     def execute(self, env):
-        print("***********************")
-        print(self.f_id)
-        print(self.f_args)
-        print(env)
+        #print("***********************")
+        #print(self.f_id)
+        #print(self.f_args)
+        #print(env)
         # check function exists
         if not self.f_id in env["funcs"].keys():
             #invalid function identifier
@@ -658,8 +658,8 @@ class CallExp(Exp): # DONE
             arg_val = None
             if tmp_arg[0] == "id":
                 if tmp_arg[1] in env["vars"].keys():
-                    print("I WILL FIND HIM LARA")
-                    print(env["vars"][tmp_arg[1]])
+                    #print("I WILL FIND HIM LARA")
+                    #print(env["vars"][tmp_arg[1]])
                     arg_val = env["vars"][tmp_arg[1]]["value"]
 
                     arg_type = env["vars"][tmp_arg[1]]["type"]
@@ -712,9 +712,9 @@ class CallExp(Exp): # DONE
             # return value
             #print("FINISED HERE")
         else:
-            print("222222222222222222222222")
-            print(env)
-            print("########################")
+            #print("222222222222222222222222")
+            #print(env)
+            #print("########################")
             #print("@@@@@@@@@@@@@@@@@@@@@@@2")
             #print(self.f_ret)
             # check if ret id is in env
@@ -1345,14 +1345,15 @@ class AST:
 
     def execute(self):
         # probably need to setup environment for vars and builtins and such here before executing, maybe pass in the env and return the envs back as an execution stack
-        print("***** AST *****")
-        self.print_tree()
-        print("***** START ENV *****")
+        #print("***** START ENV *****")
         self.setup_env()
-        print(self.env)
-        print("***** END ENV *****")
+        #print(self.env)
+        #print("***** END ENV *****")
         ret_val, self.env = self.head.execute(self.env)
-        print(self.env)
+        #print(self.env)
+    
+    def result_env(self):
+        return self.env
 
 def parse_error(error_msg):
     print(error_msg)
