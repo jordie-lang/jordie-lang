@@ -2,6 +2,10 @@
 test_case_0_variables = """
 declare changeable construct named sum of type integer semicolon
 declare changeable construct named counter of type integer with value zero semicolon
+comment
+call functional construct named print and pass in sum semicolon
+call functional construct named print and pass in counter semicolon
+comment
 """
 lexer_0_variables = """
 Tokens:
@@ -20,11 +24,11 @@ Tokens:
 parser_0_variables = """
 BodyExp:
   DeclareExp: id=sum const=False type=integer
-    Value:
+    value:
       ValExp:
         val=None
   DeclareExp: id=counter const=False type=integer
-    Value:
+    value:
       ValExp:
         val=0
 """
@@ -54,11 +58,11 @@ Tokens:
 parser_1_constants = """
 BodyExp:
   DeclareExp: id=number_one const=True type=integer
-    Value:
+    value:
       ValExp:
         val=13
   DeclareExp: id=number_two const=True type=integer
-    Value:
+    value:
       ValExp:
         val=4867
 """
@@ -88,11 +92,11 @@ Tokens:
 parser_2_integers = """
 BodyExp:
   DeclareExp: id=int_one const=False type=integer
-    Value:
+    value:
       ValExp:
         val=13
   DeclareExp: id=int_two const=False type=integer
-    Value:
+    value:
       ValExp:
         val=8
 """
@@ -122,11 +126,11 @@ Tokens:
 parser_3_floats = """
 BodyExp:
   DeclareExp: id=float_one const=False type=float
-    Value:
+    value:
       ValExp:
         val=13.5
   DeclareExp: id=float_two const=False type=float
-    Value:
+    value:
       ValExp:
         val=87.25
 """
@@ -156,11 +160,11 @@ Tokens:
 parser_4_strings = """
 BodyExp:
   DeclareExp: id=message const=False type=string
-    Value:
+    value:
       ValExp:
         val=Hello There!
   DeclareExp: id=empty const=False type=string
-    Value:
+    value:
       ValExp:
         val=
 """
@@ -190,11 +194,11 @@ Tokens:
 parser_5_lists = """
 BodyExp:
   DeclareExp: id=fruit const=False type=list
-    Value:
+    value:
       ValExp:
         val=['mango', 'banana']
   DeclareExp: id=lst const=False type=list
-    Value:
+    value:
       ValExp:
         val=['word', 7, 6.5]
 """
@@ -217,7 +221,7 @@ Tokens:
 parser_6_dictionaries = """
 BodyExp:
   DeclareExp: id=address const=False type=dictionary
-    Value:
+    value:
       ValExp:
         val={'city': 'Hoboken', 'street': 'Washington'}
 """
@@ -225,8 +229,187 @@ exec_6_dictionaries = """
 """
 
 # Test 7 - declaring structs
+test_case_7_structs = """
+declare structure named address open-curly-brace
+    field named name of type string semicolon
+    field named street of type string semicolon
+    field named city of type string semicolon
+    field named state of type string semicolon
+    field named zip of type integer semicolon
+close-curly-brace
+declare changeable construct named my_address of type address semicolon
+"""
+lexer_7_structs = """
+Tokens:
+('kw', 'declare')
+('kw', 'structure')
+('id', 'address')
+('kw', 'open-curly-brace')
+('kw', 'field')
+('id', 'name')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'field')
+('id', 'street')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'field')
+('id', 'city')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'field')
+('id', 'state')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'field')
+('id', 'zip')
+('type', 'integer')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'my_address')
+('type', 'address')
+('kw', 'semicolon')
+"""
+parser_7_structs = """
+BodyExp:
+  StructExp: id=address
+    Fields:
+      city: string
+      state: string
+      street: string
+      name: string
+      zip: integer
+  DeclareExp: id=my_address const=False type=address
+    value:
+      ValExp:
+        val=None
+"""
+exec_7_structs = """
+"""
 
 # Test 8 - setting variables
+test_case_8_set = """
+declare changeable construct named message of type string semicolon
+set construct named message with value double-quote Hello World! double-quote semicolon
+declare nonchangeable construct named number_one of type integer with value one semicolon
+declare changeable construct named counter of type integer with value zero semicolon
+set construct named counter with value number_one semicolon
+declare structure named address open-curly-brace
+    field named name of type string semicolon
+    field named street of type string semicolon
+    field named city of type string semicolon
+    field named state of type string semicolon
+    field named zip of type integer semicolon
+close-curly-brace
+declare changeable construct named my_address of type address semicolon
+set field named city of construct named my_address with value double-quote Hoboken double-quote semicolon
+"""
+lexer_8_set = """
+Tokens:
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'message')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'set')
+('id', 'message')
+('val', 'Hello World!')
+('kw', 'semicolon')
+('kw', 'declare')
+('kw', 'nonchangeable')
+('id', 'number_one')
+('type', 'integer')
+('val', 1)
+('kw', 'semicolon')
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'counter')
+('type', 'integer')
+('val', 0)
+('kw', 'semicolon')
+('kw', 'set')
+('id', 'counter')
+('id', 'number_one')
+('kw', 'semicolon')
+('kw', 'declare')
+('kw', 'structure')
+('id', 'address')
+('kw', 'open-curly-brace')
+('kw', 'field')
+('id', 'name')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'field')
+('id', 'street')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'field')
+('id', 'city')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'field')
+('id', 'state')
+('type', 'string')
+('kw', 'semicolon')
+('kw', 'field')
+('id', 'zip')
+('type', 'integer')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'my_address')
+('type', 'address')
+('kw', 'semicolon')
+('kw', 'set')
+('kw', 'field')
+('id', 'city')
+('id', 'my_address')
+('val', 'Hoboken')
+('kw', 'semicolon')
+"""
+parser_8_set = """
+BodyExp:
+  DeclareExp: id=message const=False type=string
+    value:
+      ValExp:
+        val=None
+  SetExp: id=message field_id=
+    value:
+      ValExp:
+        val=Hello World!
+  DeclareExp: id=number_one const=True type=integer
+    value:
+      ValExp:
+        val=1
+  DeclareExp: id=counter const=False type=integer
+    value:
+      ValExp:
+        val=0
+  SetExp: id=counter field_id=
+    value:
+      ValExp:
+        id=number_one
+  StructExp: id=address
+    Fields:
+      city: string
+      state: string
+      street: string
+      name: string
+      zip: integer
+  DeclareExp: id=my_address const=False type=address
+    value:
+      ValExp:
+        val=None
+  SetExp: id=my_address field_id=city
+    value:
+      ValExp:
+        val=Hoboken
+"""
+exec_8_set = """
+"""
 
 # Test 9 - declaring functions
 

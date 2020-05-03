@@ -27,7 +27,7 @@ def run_test(test_case):
         print("\n")
 
     # Test Parser
-    parser_output = parser.parse(lexer.lex(test_case_source)).get_tree_str().rstrip().replace("\r", "")
+    parser_output = parser.parse(lexer.lex(test_case_source)).get_tree().rstrip().replace("\r", "")
     #print(expected_parser_output)
     #print(parser_output)
     if expected_parser_output == parser_output:
