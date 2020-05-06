@@ -250,19 +250,19 @@ class ValExp(Exp):
         return exp_str
     
     def execute(self, env):
-        print("e1")
+        #print("e1")
         if self.is_id:
-            print("e2")
+            #print("e2")
             if not self.data in env["vars"].keys():
-                print("e3")
+                #print("e3")
                 #execute_error("")
                 return ("ERROR", env)
-            print("e44444")
-            print(env)
-            print("e4.5")
+            #print("e44444")
+            #print(env)
+            #print("e4.5")
             return (env["vars"][self.data]["value"], env)
         else:
-            print("e5")
+            #print("e5")
             return (self.data, env)
 
 class MultExp(Exp):
@@ -801,13 +801,11 @@ class CallExp(Exp):
         return exp_str
     
     def execute(self, env):
-        #print("Call")
         args_to_remove = []
         func_args_values = []
 
         # check function exists
         if not self.f_id in env["funcs"].keys():
-            #invalid function identifier
             #execute_error("invalid function name")
             return ("ERROR", env)
         
@@ -815,16 +813,10 @@ class CallExp(Exp):
         for arg in env["funcs"][self.f_id]["args"].keys():
             # arg = "argument-1"
             tmp_arg = self.f_args[arg]
-            print("000")
-            print(tmp_arg)
             arg_val, env = tmp_arg.execute(env)
-            print("888")
-            print(arg_val)
             if arg_val == "ERROR":
                 return ("ERROR", env)
-            print("111")
             arg_type = get_jordie_type(arg_val)
-            print("222")
             check_type = env["funcs"][self.f_id]["args"][arg]
 
             if arg_type != check_type and check_type != "any":
@@ -837,43 +829,40 @@ class CallExp(Exp):
 
             # add value to arg list for builtin functions
             func_args_values.append(arg_val)
+        
+        # check ret_id is in env
+        if self.f_ret:
+            if not self.f_ret in env["vars"].keys():
+                return ("ERROR", env)
 
         # check if function is in std lib or user defined
         if env["funcs"][self.f_id]["body"]:
-            # ensure no ret id is set
-            if env["cur_ret_id"]:
-                #execute_error("ret id already set")
-                return ("ERROR", env)
-
-            # add args to env
-            for arg in self.f_args.keys():
-                env["vars"][arg] = self.f_args[arg]
-
-            # add ret id to env
-            if self.f_ret:
-                env["cur_ret_id"] = self.f_ret
-
             # run user function and return val
-            tmp_val, env = env["funcs"][self.f_id]["body"].execute(env)
-            if tmp_val == "ERROR":
-                return ("ERROR", env)
-
-            # remove ret id to env
-            if self.f_ret:
-                env["cur_ret_id"] = ""
-
-            # return value
-        else:
-            # check that ret_id is set
-            if self.f_ret:
-                #print("its ya boi")
-                # check if ret_id is in env
-                if not self.f_ret in env["vars"].keys():
-                    #execute_error("ret id doesn't exist")
+            for exp in env["funcs"][self.f_id]["body"].get_exp_list():
+                tmp_val, env = exp.execute(env)
+                if tmp_val == "EXIT":
+                    return ("EXIT", env)
+                elif tmp_val == "ERROR":
                     return ("ERROR", env)
+                elif tmp_val == "RETURN":
+                    if not env["vars"]["jordie_return_value"]:
+                        return ("ERROR", env)
+                    ret_type = get_jordie_type(env["vars"]["jordie_return_value"])
+                    if ret_type != env["vars"][self.f_ret]["type"]:
+                        return ("ERROR", env)
+                    
+                    env["vars"][self.f_ret]["value"] = env["vars"]["jordie_return_value"]
 
+                    # remove return value from env
+                    env["vars"]["jordie_return_value"] = None
+                    return (None, env)
+        else:
+            if self.f_ret:
                 # run std lib function and return val
                 ret_val = env["funcs"][self.f_id]["fnc"](func_args_values)
+                ret_type = get_jordie_type(ret_val)
+                if ret_type != env["vars"][self.f_ret]["type"]:
+                    return ("ERROR", env)
                 env["vars"][self.f_ret]["value"] = ret_val
             else:
                 # run std lib function
@@ -982,17 +971,12 @@ class RetExp(Exp): # DID I DO THIS?
     
     def execute(self, env):
         #print("RETRETRETRETRETRET")
-        tmp_val = self.r_val.execute(env)
+        tmp_val, env = self.r_val.execute(env)
         if tmp_val == "ERROR":
             return ("ERROR", env)
-        #print(tmp_val)
-        # check for cur ret id
-        if not env["cur_ret_id"]:
-            #execute_error("no return id")
-            return ("ERROR", env)
         
-        env["vars"]["cur_ret_id"] = tmp_val
-        return (None, env)
+        env["vars"]["jordie_return_value"] = tmp_val
+        return ("RETURN", env)
 
 class IfExp(Exp):
     def __init__(self, _conds, _bodys, _else):
