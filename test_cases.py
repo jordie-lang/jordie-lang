@@ -628,6 +628,7 @@ test_case_14_while_loop = """
 declare changeable construct named counter of type integer with value ten semicolon
 while counter is greater than zero run the following open-curly-brace
     call functional construct named print and pass in counter semicolon
+    set construct named counter with value counter minus one semicolon
 close-curly-brace
 """
 lexer_14_while_loop = """
@@ -648,6 +649,12 @@ Tokens:
 ('id', 'print')
 ('kw', 'pass')
 ('id', 'counter')
+('kw', 'semicolon')
+('kw', 'set')
+('id', 'counter')
+('id', 'counter')
+('op', 'minus')
+('val', 1)
 ('kw', 'semicolon')
 ('kw', 'close-curly-brace')
 """
@@ -670,16 +677,375 @@ BodyExp:
             value:
               ValExp:
                 id=counter
+      SetExp: id=counter field_id=
+        value:
+          SubExp:
+            ValExp:
+              id=counter
+            ValExp:
+              val=1
 """
 exec_14_while_loop = """
 """
 
-# Test 15 - break statement
-
-# Test 16 - continue statement
-
 # Test 17 - if statement
+test_case_15_if = """
+declare changeable construct named number_six of type integer with value six semicolon
+if number_six is equal to six run the following open-curly-brace
+    call functional construct named print and pass in double-quote if was true double-quote semicolon
+close-curly-brace
+or if number_six is greater than six run the following open-curly-brace
+    call functional construct named print and pass in double-quote else if was true double-quote semicolon
+close-curly-brace
+or run the following open-curly-brace
+    call functional construct named print and pass in double-quote else case double-quote semicolon
+close-curly-brace
+"""
+lexer_15_if = """
+Tokens:
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'number_six')
+('type', 'integer')
+('val', 6)
+('kw', 'semicolon')
+('kw', 'if')
+('id', 'number_six')
+('op', 'is equal to')
+('val', 6)
+('kw', 'open-curly-brace')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('val', 'if was true')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+('kw', 'or')
+('kw', 'if')
+('id', 'number_six')
+('op', 'is greater than')
+('val', 6)
+('kw', 'open-curly-brace')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('val', 'else if was true')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+('kw', 'or')
+('kw', 'open-curly-brace')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('val', 'else case')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+"""
+parser_15_if = """
+BodyExp:
+  DeclareExp: id=number_six const=False type=integer
+    value:
+      ValExp:
+        val=6
+  IfExp:
+    EqualExp:
+      ValExp:
+        id=number_six
+      ValExp:
+        val=6
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-1
+            value:
+              ValExp:
+                val=if was true
+  Else If:
+    EqualExp:
+      ValExp:
+        id=number_six
+      ValExp:
+        val=6
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-1
+            value:
+              ValExp:
+                val=if was true
+  Else:
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-1
+            value:
+              ValExp:
+                val=else case
+"""
+exec_15_if = """
+"""
+
+# Test 16 - break statement
+test_case_16_break = """
+declare changeable construct named counter of type integer with value ten semicolon
+while counter is greater than zero run the following open-curly-brace
+    set construct named counter with value counter minus one semicolon
+    if counter is equal to five run the following open-curly-brace
+        break out of loop semicolon
+    close-curly-brace
+    call functional construct named print and pass in counter semicolon
+close-curly-brace
+"""
+lexer_16_break = """
+Tokens:
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'counter')
+('type', 'integer')
+('val', 10)
+('kw', 'semicolon')
+('kw', 'while')
+('id', 'counter')
+('op', 'is greater than')
+('val', 0)
+('kw', 'open-curly-brace')
+('kw', 'set')
+('id', 'counter')
+('id', 'counter')
+('op', 'minus')
+('val', 1)
+('kw', 'semicolon')
+('kw', 'if')
+('id', 'counter')
+('op', 'is equal to')
+('val', 5)
+('kw', 'open-curly-brace')
+('kw', 'break')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('id', 'counter')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+"""
+parser_16_break = """
+BodyExp:
+  DeclareExp: id=counter const=False type=integer
+    value:
+      ValExp:
+        val=10
+  WhileExp:
+    GreaterExp:
+      ValExp:
+        id=counter
+      ValExp:
+        val=0
+    BodyExp:
+      SetExp: id=counter field_id=
+        value:
+          SubExp:
+            ValExp:
+              id=counter
+            ValExp:
+              val=1
+      IfExp:
+        EqualExp:
+          ValExp:
+            id=counter
+          ValExp:
+            val=5
+        BodyExp:
+          BreakExp
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-1
+            value:
+              ValExp:
+                id=counter
+"""
+exec_16_break = """
+"""
+
+# Test 17 - continue statement
+test_case_17_continue = """
+declare changeable construct named counter of type integer with value ten semicolon
+while counter is greater than zero run the following open-curly-brace
+    set construct named counter with value counter minus one semicolon
+    if counter is equal to five run the following open-curly-brace
+        jump to next iteration semicolon
+    close-curly-brace
+    call functional construct named print and pass in counter semicolon
+close-curly-brace
+"""
+lexer_17_continue = """
+Tokens:
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'counter')
+('type', 'integer')
+('val', 10)
+('kw', 'semicolon')
+('kw', 'while')
+('id', 'counter')
+('op', 'is greater than')
+('val', 0)
+('kw', 'open-curly-brace')
+('kw', 'set')
+('id', 'counter')
+('id', 'counter')
+('op', 'minus')
+('val', 1)
+('kw', 'semicolon')
+('kw', 'if')
+('id', 'counter')
+('op', 'is equal to')
+('val', 5)
+('kw', 'open-curly-brace')
+('kw', 'jump')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('id', 'counter')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+"""
+parser_17_continue = """
+BodyExp:
+  DeclareExp: id=counter const=False type=integer
+    value:
+      ValExp:
+        val=10
+  WhileExp:
+    GreaterExp:
+      ValExp:
+        id=counter
+      ValExp:
+        val=0
+    BodyExp:
+      SetExp: id=counter field_id=
+        value:
+          SubExp:
+            ValExp:
+              id=counter
+            ValExp:
+              val=1
+      IfExp:
+        EqualExp:
+          ValExp:
+            id=counter
+          ValExp:
+            val=5
+        BodyExp:
+          JumpExp
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-1
+            value:
+              ValExp:
+                id=counter
+"""
+exec_17_continue = """
+"""
 
 # Test 18 - try / catch
+test_case_18_try = """
+try to run the following open-curly-brace
+    call functional construct named pint and pass in double-quote passed double-quote semicolon
+close-curly-brace
+catch error named e and run the following open-curly-brace
+    call functional construct named print and pass in double-quote failed double-quote semicolon
+close-curly-brace
+"""
+lexer_18_try = """
+Tokens:
+('kw', 'try')
+('kw', 'open-curly-brace')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('val', 'passed')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+('kw', 'catch')
+('id', 'e')
+('kw', 'open-curly-brace')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('val', 'failed')
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+"""
+parser_18_try = """
+BodyExp:
+  TryExp:
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-1
+            value:
+              ValExp:
+                val=passed
+    Catch: id=e
+      BodyExp:
+        CallExp: func_id=print ret_id=None
+          Args:
+            Arg: argument-1
+              value:
+                ValExp:
+                  val=failed
+"""
+exec_18_try = """
+"""
 
 # Test 19 - exit statement
+test_case_19_exit = """
+call functional construct named print and pass in three semicolon
+exit
+call functional construct named print and pass in seven semicolon
+"""
+lexer_19_exit = """
+Tokens:
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('val', 3)
+('kw', 'semicolon')
+('kw', 'exit')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('val', 7)
+('kw', 'semicolon')
+"""
+parser_19_exit = """
+BodyExp:
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-1
+        value:
+          ValExp:
+            val=3
+  ExitExp
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-1
+        value:
+          ValExp:
+            val=7
+"""
+exec_19_exit = """
+"""
