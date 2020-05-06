@@ -1,0 +1,29 @@
+comment
+
+Fibonacci
+
+comment
+
+declare functional construct named fib which returns type integer and receives type integer open-curly-brace
+    declare changeable construct named n of type integer with value argument-one semicolon
+    if cond n is less than zero cond is true then run the following open-curly-brace
+        call functional construct named print and pass in double-quote Error Incorrect Input double-quote semicolon
+    close-curly-brace
+    if the previous were not true but this cond n is equal to one cond is true then run the following open-curly-brace
+        return value zero semicolon
+    close-curly-brace
+    if the previous were not true but this cond n is equal to two cond is true then run the following open-curly-brace
+        return value one semicolon
+    close-curly-brace
+    if the previous were not true then run the follwoing open-curly-brace
+        declare changeable construct named return_value_one of type integer semicolon
+        declare changeable construct named return_value_two of type integer semicolon
+        call functional construct named fib and pass in n minus-sign one and return value to construct named return_value_one semicolon
+        call functional construct named fib and pass in n minus-sign two and return value to construct named return_value_two semicolon
+        return return_value_one plus-sign return_value_two
+    close-curly-brace
+close-curly-brace
+
+declare changeable construct named result of type integer semicolon
+call functional construct named fib and pass in nine and return value to construct named result semicolon
+call functional construct named print and pass in result semicolon

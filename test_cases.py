@@ -488,6 +488,40 @@ BodyExp:
 exec_10_declare_funcs = """
 """
 
+# Test 10 - declaring functions with return value
+test_case_10_return = """
+declare functional construct named get_five which returns type integer and receives nothing open-curly-brace
+    return value five semicolon
+close-curly-brace
+"""
+lexer_10_return = """
+Tokens:
+('kw', 'declare')
+('kw', 'functional')
+('id', 'get_five')
+('kw', 'returns')
+('type', 'integer')
+('kw', 'receives')
+('type', 'nothing')
+('kw', 'open-curly-brace')
+('kw', 'return')
+('val', 5)
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+"""
+parser_10_return = """
+BodyExp:
+  FuncExp: id=get_five type=integer
+    Args:
+      None
+    BodyExp:
+      RetExp:
+        ValExp:
+          val=5
+"""
+exec_10_return = """
+"""
+
 # Test 11 - calling functions
 test_case_11_call_funcs = """
 declare functional construct named print_five which returns nothing and receives nothing open-curly-brace
@@ -534,6 +568,74 @@ BodyExp:
       None
 """
 exec_11_call_funcs = """
+5
+"""
+
+# Test 11 - calling function with return value
+test_case_11_call_funcs_return = """
+declare changeable construct named number_five of type integer semicolon
+declare functional construct named get_five which returns type integer and receives nothing open-curly-brace
+    return value five semicolon
+close-curly-brace
+call functional construct named get_five and return value to construct named number_five semicolon
+call functional construct named print and pass in number_five semicolon
+"""
+lexer_11_call_funcs_return = """
+Tokens:
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'number_five')
+('type', 'integer')
+('kw', 'semicolon')
+('kw', 'declare')
+('kw', 'functional')
+('id', 'get_five')
+('kw', 'returns')
+('type', 'integer')
+('kw', 'receives')
+('type', 'nothing')
+('kw', 'open-curly-brace')
+('kw', 'return')
+('val', 5)
+('kw', 'semicolon')
+('kw', 'close-curly-brace')
+('kw', 'call')
+('kw', 'functional')
+('id', 'get_five')
+('kw', 'return')
+('id', 'number_five')
+('kw', 'semicolon')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('id', 'number_five')
+('kw', 'semicolon')
+"""
+parser_11_call_funcs_return = """
+BodyExp:
+  DeclareExp: id=number_five const=False type=integer
+    value:
+      ValExp:
+        val=None
+  FuncExp: id=get_five type=integer
+    Args:
+      None
+    BodyExp:
+      RetExp:
+        ValExp:
+          val=5
+  CallExp: func_id=get_five ret_id=number_five
+    Args:
+      None
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-1
+        value:
+          ValExp:
+            id=number_five
+"""
+exec_11_call_funcs_return = """
 """
 
 # Test 12 - retrieve source
@@ -577,6 +679,9 @@ BodyExp:
             val=7
 """
 exec_12_retrieve = """
+3
+5
+7
 """
 
 # Test 13 - for loop
@@ -621,6 +726,9 @@ BodyExp:
                 id=item
 """
 exec_13_for_loop = """
+mango
+apple
+strawberry
 """
 
 # Test 14 - while loop
@@ -686,6 +794,16 @@ BodyExp:
               val=1
 """
 exec_14_while_loop = """
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
 """
 
 # Test 17 - if statement
@@ -786,6 +904,7 @@ BodyExp:
                 val=else case
 """
 exec_15_if = """
+if was true
 """
 
 # Test 16 - break statement
@@ -870,6 +989,10 @@ BodyExp:
                 id=counter
 """
 exec_16_break = """
+9
+8
+7
+6
 """
 
 # Test 17 - continue statement
@@ -954,12 +1077,21 @@ BodyExp:
                 id=counter
 """
 exec_17_continue = """
+9
+8
+7
+6
+4
+3
+2
+1
+0
 """
 
 # Test 18 - try / catch
 test_case_18_try = """
 try to run the following open-curly-brace
-    call functional construct named pint and pass in double-quote passed double-quote semicolon
+    call functional construct named print and pass in double-quote passed double-quote semicolon
 close-curly-brace
 catch error named e and run the following open-curly-brace
     call functional construct named print and pass in double-quote failed double-quote semicolon
@@ -1007,6 +1139,7 @@ BodyExp:
                   val=failed
 """
 exec_18_try = """
+passed
 """
 
 # Test 19 - exit statement
@@ -1048,4 +1181,5 @@ BodyExp:
             val=7
 """
 exec_19_exit = """
+3
 """

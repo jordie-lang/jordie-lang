@@ -216,6 +216,9 @@ def get_jordie_type(foo):
     elif type(foo) == dict:
         return "dictionary"
     else:
+        print("aaa")
+        print(foo)
+        print("bbb")
         execute_error("unknown type")
 
 class Exp():
@@ -247,12 +250,19 @@ class ValExp(Exp):
         return exp_str
     
     def execute(self, env):
+        print("e1")
         if self.is_id:
+            print("e2")
             if not self.data in env["vars"].keys():
+                print("e3")
                 #execute_error("")
                 return ("ERROR", env)
+            print("e44444")
+            print(env)
+            print("e4.5")
             return (env["vars"][self.data]["value"], env)
         else:
+            print("e5")
             return (self.data, env)
 
 class MultExp(Exp):
@@ -419,7 +429,11 @@ class EqualExp(Exp):
     
     def execute(self, env):
         l_val, env = self.left_exp.execute(env)
+        if l_val == "ERROR":
+            return ("ERROR", env)
         r_val, env = self.right_exp.execute(env)
+        if r_val == "ERROR":
+            return ("ERROR", env)
         return (l_val==r_val, env)
 
 class GreaterExp(Exp):
@@ -443,9 +457,12 @@ class GreaterExp(Exp):
         return exp_str
     
     def execute(self, env):
-        #print("GreterExp")
         l_val, env = self.left_exp.execute(env)
+        if l_val == "ERROR":
+            return ("ERROR", env)
         r_val, env = self.right_exp.execute(env)
+        if r_val == "ERROR":
+            return ("ERROR", env)
         return (l_val>r_val, env)
 
 class LessExp(Exp):
@@ -468,7 +485,11 @@ class LessExp(Exp):
     
     def execute(self, env):
         l_val, env = self.left_exp.execute(env)
+        if l_val == "ERROR":
+            return ("ERROR", env)
         r_val, env = self.right_exp.execute(env)
+        if r_val == "ERROR":
+            return ("ERROR", env)
         return (l_val<r_val, env)
 
 class NotExp(Exp):
@@ -487,6 +508,8 @@ class NotExp(Exp):
     
     def execute(self, env):
         r_val, env = self.right_exp.execute(env)
+        if r_val == "ERROR":
+            return ("ERROR", env)
         return (not r_val, env)
 
 class AndExp(Exp):
@@ -509,7 +532,11 @@ class AndExp(Exp):
     
     def execute(self, env):
         l_val, env = self.left_exp.execute(env)
+        if l_val == "ERROR":
+            return ("ERROR", env)
         r_val, env = self.right_exp.execute(env)
+        if r_val == "ERROR":
+            return ("ERROR", env)
         return (l_val and r_val, env)
 
 class OrExp(Exp):
@@ -534,7 +561,11 @@ class OrExp(Exp):
     
     def execute(self, env):
         l_val, env = self.left_exp.execute(env)
+        if l_val == "ERROR":
+            return ("ERROR", env)
         r_val, env = self.right_exp.execute(env)
+        if r_val == "ERROR":
+            return ("ERROR", env)
         return (l_val or r_val, env)
 
 class CondExp(Exp): # OLD
@@ -577,10 +608,15 @@ class BodyExp(Exp):
         #print(self.exp_list)
         for exp in self.exp_list:
             #print(exp)
-            val, env = exp.execute(env)
+            tmp = exp.execute(env)
+            #print(tmp)
+            val, env = tmp
+            #val, env = exp.execute(env)
             if val == "EXIT":
                 break
-        return None, env
+            elif val == "ERROR":
+                return ("ERROR", env)
+        return (None, env)
 
 class StructExp(Exp):
     def __init__(self, _id, _e_fields):
@@ -623,6 +659,8 @@ class RetrieveExp(Exp):
 
         # run source BodyExp
         ret_val, env = body.execute(env)
+        if ret_val == "ERROR":
+            return ("ERROR", env)
         return (None, env)
 
 class DeclareExp(Exp):
@@ -644,6 +682,8 @@ class DeclareExp(Exp):
     
     def execute(self, env):
         val, env = self.e_val.execute(env)
+        if val == "ERROR":
+            return ("ERROR", env)
         if val != None:
             env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": val}
             #print("its not ya boi")
@@ -677,11 +717,14 @@ class SetExp(Exp):
     def execute(self, env):
         # ensure target id is in env
         if not self.e_id in env["vars"].keys():
-            execute_error("unknown construct: {}".format(self.e_id))
+            #execute_error("unknown construct: {}".format(self.e_id))
+            return ("ERROR", env)
 
         # evaluate val exp
         #val, env = self.e_val.execute(env)  TOO MANY VALUES TO UNPACK, WUT?
         val = self.e_val.execute(env)
+        if val == "ERROR":
+            return ("ERROR", env)
         env = val[1]
         val = val[0]
         if self.e_field_id:
@@ -689,7 +732,8 @@ class SetExp(Exp):
             #f_type = env["vars"][self.e_id]["value"][self.e_field_id]["type"]
             f_type = env["types"][env["vars"][self.e_id]["type"]][self.e_field_id]
             if not check_jordie_types(val, f_type):
-                execute_error("invalid type 1")
+                #execute_error("invalid type 1")
+                return ("ERROR", env)
             else:
                 #print("aa")
                 #print(env)
@@ -699,7 +743,8 @@ class SetExp(Exp):
             #set regular var
             v_type = env["vars"][self.e_id]["type"]
             if not check_jordie_types(val, v_type):
-                execute_error("invalid type 2")
+                #execute_error("invalid type 2")
+                return ("ERROR", env)
             else:
                 env["vars"][self.e_id]["value"] = val
         return (None, env)
@@ -718,6 +763,8 @@ class WhileExp(Exp):
 
     def execute(self, env):
         cond_val, env = self.e_cond.execute(env)
+        if cond_val == "ERROR":
+            return ("ERROR", env)
         while cond_val:
             for exp in self.e_body.get_exp_list():
                 tmp_val, env = exp.execute(env)
@@ -727,7 +774,11 @@ class WhileExp(Exp):
                     break
                 elif tmp_val == "EXIT":
                     return ("EXIT", env)
+                elif tmp_val == "ERROR":
+                    return ("ERROR", env)
             cond_val, env = self.e_cond.execute(env)
+            if cond_val == "ERROR":
+                return ("ERROR", env)
         return (None, env)
 
 class CallExp(Exp):
@@ -757,18 +808,28 @@ class CallExp(Exp):
         # check function exists
         if not self.f_id in env["funcs"].keys():
             #invalid function identifier
-            execute_error("invalid function name")
+            #execute_error("invalid function name")
+            return ("ERROR", env)
         
         # check args are correct types and add to env
         for arg in env["funcs"][self.f_id]["args"].keys():
             # arg = "argument-1"
             tmp_arg = self.f_args[arg]
+            print("000")
+            print(tmp_arg)
             arg_val, env = tmp_arg.execute(env)
+            print("888")
+            print(arg_val)
+            if arg_val == "ERROR":
+                return ("ERROR", env)
+            print("111")
             arg_type = get_jordie_type(arg_val)
+            print("222")
             check_type = env["funcs"][self.f_id]["args"][arg]
 
             if arg_type != check_type and check_type != "any":
-                execute_error("invalid arg type")
+                #execute_error("invalid arg type")
+                return ("ERROR", env)
 
             # add args to env, args are constants
             env["vars"][arg] = {"type": arg_type, "const": True, "value": arg_val}
@@ -781,7 +842,8 @@ class CallExp(Exp):
         if env["funcs"][self.f_id]["body"]:
             # ensure no ret id is set
             if env["cur_ret_id"]:
-                execute_error("ret id already set")
+                #execute_error("ret id already set")
+                return ("ERROR", env)
 
             # add args to env
             for arg in self.f_args.keys():
@@ -792,7 +854,9 @@ class CallExp(Exp):
                 env["cur_ret_id"] = self.f_ret
 
             # run user function and return val
-            tmp_ret_val, env = env["funcs"][self.f_id]["body"].execute(env)
+            tmp_val, env = env["funcs"][self.f_id]["body"].execute(env)
+            if tmp_val == "ERROR":
+                return ("ERROR", env)
 
             # remove ret id to env
             if self.f_ret:
@@ -802,10 +866,11 @@ class CallExp(Exp):
         else:
             # check that ret_id is set
             if self.f_ret:
-                print("its ya boi")
+                #print("its ya boi")
                 # check if ret_id is in env
                 if not self.f_ret in env["vars"].keys():
-                    execute_error("ret id doesn't exist")
+                    #execute_error("ret id doesn't exist")
+                    return ("ERROR", env)
 
                 # run std lib function and return val
                 ret_val = env["funcs"][self.f_id]["fnc"](func_args_values)
@@ -859,7 +924,8 @@ class ForExp(Exp):
         # check that iterable is a list
         id_type = env["vars"][self.iter_id]["type"]
         if id_type != "list":
-            execute_error("")
+            #execute_error("")
+            return ("ERROR", env)
 
         iter_list = env["vars"][self.iter_id]["value"]
 
@@ -876,6 +942,8 @@ class ForExp(Exp):
                 continue
             elif tmp_val == "EXIT":
                 return ("EXIT", env)
+            elif tmp_val == "ERROR":
+                return ("ERROR", env)
 
         return (None, env)
 
@@ -899,14 +967,10 @@ class FuncExp(Exp):
         return exp_str
     
     def execute(self, env):
-        #print("((((((((((((((((((((((((((((")
-        #print(env)
-        #print(self.f_id)
-        #print(self.f_args)
         env["funcs"][self.f_id] = {"type": self.f_type, "args": self.f_args, "body": self.f_body, "fnc": None}
         return (None, env)
 
-class RetExp(Exp):
+class RetExp(Exp): # DID I DO THIS?
     def __init__(self, _val):
         self.r_val = _val
     
@@ -919,13 +983,16 @@ class RetExp(Exp):
     def execute(self, env):
         #print("RETRETRETRETRETRET")
         tmp_val = self.r_val.execute(env)
+        if tmp_val == "ERROR":
+            return ("ERROR", env)
         #print(tmp_val)
         # check for cur ret id
         if not env["cur_ret_id"]:
-            execute_error("no return id")
+            #execute_error("no return id")
+            return ("ERROR", env)
         
         env["vars"]["cur_ret_id"] = tmp_val
-        return env
+        return (None, env)
 
 class IfExp(Exp):
     def __init__(self, _conds, _bodys, _else):
@@ -957,6 +1024,8 @@ class IfExp(Exp):
             cond = self.e_conds[i]
             body = self.e_bodys[i]
             cond_val, env = cond.execute(env)
+            if cond_val == "ERROR":
+                return ("ERROR", env)
             if cond_val:
                 for exp in body.get_exp_list():
                     tmp_val, env = exp.execute(env)
@@ -967,12 +1036,16 @@ class IfExp(Exp):
                         return ("JUMP", env)
                     elif tmp_val == "EXIT":
                         return ("EXIT", env)
+                    elif tmp_val == "ERROR":
+                        return ("ERROR", env)
                 return (None, env)
         
         if self.e_else:
             body = self.e_bodys[-1]
             for exp in body.get_exp_list():
                 tmp_val, env = exp.execute(env)
+                if tmp_val == "ERROR":
+                    return ("ERROR", env)
 
         return (None, env)
 
@@ -993,9 +1066,11 @@ class TryExp(Exp):
     def execute(self, env):
         tmp_val, env = self.e_body.execute(env)
         if tmp_val == "ERROR":
-            env["vars"][self.e_err_id] = {"const": True, "type": get_jordie_type(e), "value": e}
+            error = "An Error Has Occured."
+            env["vars"][self.e_err_id] = {"const": True, "type": get_jordie_type(error), "value": error}
             tmp_val, env = self.e_err_body.execute(env)
             return (None, env)
+        return (None, env)
 
 class AssertExp(Exp): # OLD
     def __init__(self, _cond):
@@ -1082,6 +1157,9 @@ def parse_declare_exp(token_list):
                 while(not token == ("kw", "open-curly-brace")):
                     if token[0] == "type":
                         f_args["argument-{}".format(str(cnt))] = token[1]
+                    elif token == ("kw", "and"):
+                        #nop
+                        nop = "YEET"
                     else:
                         parse_error("")
                     token, token_list = pop_token(token_list)
@@ -1322,8 +1400,7 @@ def parse_return_exp(token_list):
     while(not token == ("kw", "semicolon")):
         val_tokens.append(token)
         token, token_list = pop_token(token_list)
-    r_val = ValExp(val_tokens)
-    r_val.build_tree()
+    r_val = parse_value_tokens(val_tokens)
     return (RetExp(r_val), token_list)
 
 def parse_if_exp(token_list):
@@ -1540,6 +1617,8 @@ class AST:
         self.create_env()
         #print("aaa")
         _ret_val, self.env = self.head.execute(self.env)
+        if _ret_val == "ERROR":
+            execute_error("An Error Has Occured.")
         print(self.env)
     
 
