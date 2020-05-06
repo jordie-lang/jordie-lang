@@ -6,6 +6,7 @@ AST:
 
 """
 from jordie_std import *
+import lexer
 
 # operators
 # operator precedence from lowest to highest
@@ -48,25 +49,25 @@ def deepcopy(foo):
 
 def parse_operator_tokens(op, token_list, index):
     if op == "times":
-        return MultExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return MultExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     elif op == "divides":
-        return DivExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return DivExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     elif op == "plus":
-        return AddExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return AddExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     elif op == "minus":
-        return SubExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return SubExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     elif op == "is equal to":
-        return EqualExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return EqualExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     elif op == "is greater than":
-        return GreaterExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return GreaterExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     elif op == "is less than":
-        return LessExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return LessExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     elif op == "not":
-        return NotExp(parse_value_token(token_list[index+1:]))
+        return NotExp(parse_value_tokens(token_list[index+1:]))
     elif op == "and":
-        return AndExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return AndExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     elif op == "or":
-        return OrExp(parse_value_token(token_list[:index]), parse_value_token(token_list[index+1:]))
+        return OrExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     else:
         parse_error("")
 
@@ -255,12 +256,12 @@ class ValExp(Exp):
 
 class MultExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
@@ -271,18 +272,26 @@ class MultExp(Exp):
         exp_str += self.right_exp.print_exp(level+1)
         return exp_str
     
-    def execute(self):
-        exit(0)
-        return "RUN MULT EXP"
+    def execute(self, env):
+        l_val, env = self.left_exp.execute(env)
+        l_type = get_jordie_type(l_val)
+        if l_type != "integer" and l_type != "float":
+            execute_error("")
+
+        r_val, env = self.right_exp.execute(env)
+        r_type = get_jordie_type(r_val)
+        if r_type != "integer" and r_type != "float":
+            execute_error("")
+        return (l_val*r_val, env)
 
 class DivExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
@@ -294,17 +303,25 @@ class DivExp(Exp):
         return exp_str
     
     def execute(self):
-        exit(0)
-        return "RUN DIV EXP"
+        l_val, env = self.left_exp.execute(env)
+        l_type = get_jordie_type(l_val)
+        if l_type != "integer" and l_type != "float":
+            execute_error("")
+
+        r_val, env = self.right_exp.execute(env)
+        r_type = get_jordie_type(r_val)
+        if r_type != "integer" and r_type != "float":
+            execute_error("")
+        return (l_val/r_val, env)
 
 class AddExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
@@ -316,34 +333,25 @@ class AddExp(Exp):
         return exp_str
     
     def execute(self, env):
-        #print("ADDADDADDADDADD")
-        #print(self.left_exp)
-        #print(self.right_exp)
-        l_val = self.left_exp.execute(env)
-        r_val = self.right_exp.execute(env)
-        #print("++++++++++++++++++++++++++")
-        #print(l_val)
-        if l_val[0] == "id":
-            l_val = env["vars"][l_val[1]]["value"]
-        else:
-            l_val = l_val[1]
-        #print(r_val)
-        if r_val[0] == "id":
-            r_val = env["vars"][r_val[1]]["value"]
-        else:
-            r_val = r_val[1]
-        #print(l_val)
-        #print(r_val)
-        return l_val + r_val
+        l_val, env = self.left_exp.execute(env)
+        l_type = get_jordie_type(l_val)
+        if l_type != "integer" and l_type != "float":
+            execute_error("")
+
+        r_val, env = self.right_exp.execute(env)
+        r_type = get_jordie_type(r_val)
+        if r_type != "integer" and r_type != "float":
+            execute_error("")
+        return (l_val+r_val, env)
 
 class SubExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
@@ -355,17 +363,25 @@ class SubExp(Exp):
         return exp_str
     
     def execute(self):
-        exit(0)
-        return "RUN SUB EXP"
+        l_val, env = self.left_exp.execute(env)
+        l_type = get_jordie_type(l_val)
+        if l_type != "integer" and l_type != "float":
+            execute_error("")
+
+        r_val, env = self.right_exp.execute(env)
+        r_type = get_jordie_type(r_val)
+        if r_type != "integer" and r_type != "float":
+            execute_error("")
+        return (l_val-r_val, env)
 
 class EqualExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
@@ -377,21 +393,24 @@ class EqualExp(Exp):
         return exp_str
     
     def execute(self):
-        exit(0)
-        return "RUN EQUAL EXP"
+        l_val, env = self.left_exp.execute(env)
+        r_val, env = self.right_exp.execute(env)
+        return (l_val==r_val, env)
 
 class GreaterExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
+        #print(self.left_exp)
+        #print(self.right_exp)
         exp_str = ""
         exp_str += "{}GreaterExp:\n".format("  "*level)
         exp_str += self.left_exp.print_exp(level+1)
@@ -399,17 +418,18 @@ class GreaterExp(Exp):
         return exp_str
     
     def execute(self):
-        exit(0)
-        return "RUN GREATER EXP"
+        l_val, env = self.left_exp.execute(env)
+        r_val, env = self.right_exp.execute(env)
+        return (l_val>r_val, env)
 
 class LessExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
@@ -421,15 +441,16 @@ class LessExp(Exp):
         return exp_str
     
     def execute(self):
-        exit(0)
-        return "RUN LESS EXP"
+        l_val, env = self.left_exp.execute(env)
+        r_val, env = self.right_exp.execute(env)
+        return (l_val<r_val, env)
 
 class NotExp(Exp):
     def __init__(self, _right):
-        self.right_exp = None
-        self.right_tokens = _right
+        self.right_exp = _right
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
@@ -444,12 +465,12 @@ class NotExp(Exp):
 
 class AndExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
@@ -466,12 +487,12 @@ class AndExp(Exp):
 
 class OrExp(Exp):
     def __init__(self, _left, _right):
-        self.left_exp = None
-        self.right_exp = None
-        self.left_tokens = _left
-        self.right_tokens = _right
+        self.left_exp = _left
+        self.right_exp = _right
+        #self.left_tokens = _left
+        #self.right_tokens = _right
 
-    def build_tree(self):
+    def build_tree(self): # OLD
         self.left_exp = get_next_cond_exp(self.left_tokens)
         self.right_exp = get_next_cond_exp(self.right_tokens)
 
@@ -486,7 +507,7 @@ class OrExp(Exp):
         exit(0)
         return "RUN OR EXP"
 
-class CondExp(Exp):
+class CondExp(Exp): # OLD
     def __init__(self, _cond):
         self.c_tokens = _cond
         self.c_exp = None
@@ -552,7 +573,19 @@ class RetrieveExp(Exp):
         return exp_str
     
     def execute(self, env):
-        return env
+        # get source from file
+        with open(self.e_id + ".jordie", "r") as f:
+            test_case_source = f.read()
+        
+        # run lexer and parser on source
+        source_ast = parse(lexer.lex(test_case_source))
+
+        # get source BodyExp
+        body = source_ast.get_body()
+
+        # run source BodyExp
+        ret_val, env = body.execute(env)
+        return (None, env)
 
 class DeclareExp(Exp):
     def __init__(self, _id, _const, _type, _value=None):
@@ -646,13 +679,12 @@ class WhileExp(Exp):
         return exp_str
 
     def execute(self):
-        exit(0)
-        return "RUN WHILE EXP"
+        print("WhileExp")
 
 class CallExp(Exp):
     def __init__(self, _f_id, _args, _ret_id):
         self.f_id = _f_id
-        self.f_args = _args
+        self.f_args = _args #list of ValExps
         self.f_ret = _ret_id
     
     def print_exp(self, level):
@@ -661,13 +693,18 @@ class CallExp(Exp):
         exp_str += "{}Args:\n".format("  "*(level+1))
         if self.f_args:
             for arg in self.f_args.keys():
-                exp_str += "{}Arg: {}={}\n".format("  "*(level+2), arg, self.f_args[arg])
+                exp_str += "{}Arg: {}\n".format("  "*(level+2), arg)
+                exp_str += "{}value:\n".format("  "*(level+3))
+                exp_str += self.f_args[arg].print_exp(level+4)
         else:
             exp_str += "{}None\n".format("  "*(level+2))
         return exp_str
     
     def execute(self, env):
-        #print("Call Exp")
+        #print("Call")
+        args_to_remove = []
+        func_args_values = []
+
         # check function exists
         if not self.f_id in env["funcs"].keys():
             #invalid function identifier
@@ -677,27 +714,19 @@ class CallExp(Exp):
         for arg in env["funcs"][self.f_id]["args"].keys():
             # arg = "argument-1"
             tmp_arg = self.f_args[arg]
-            arg_type = ""
-            arg_val = None
-            if tmp_arg[0] == "id":
-                if tmp_arg[1] in env["vars"].keys():
-                    arg_val = env["vars"][tmp_arg[1]]["value"]
+            arg_val, env = tmp_arg.execute(env)
+            arg_type = get_jordie_type(arg_val)
+            check_type = env["funcs"][self.f_id]["args"][arg]
 
-                    arg_type = env["vars"][tmp_arg[1]]["type"]
-                else:
-                    execute_error("argument {} not defined".format(tmp_arg[1]))
-            elif tmp_arg[0] == "val":
-                arg_val = tmp_arg[1]
-                arg_type = get_jordie_type(arg_val)
-            else:
-                execute_error("invalid arg format")
-            
-            if arg_type != env["funcs"][self.f_id]["args"][arg] and env["funcs"][self.f_id]["args"][arg] != "any":
+            if arg_type != check_type and check_type != "any":
                 execute_error("invalid arg type")
 
-            # add args to env
+            # add args to env, args are constants
             env["vars"][arg] = {"type": arg_type, "const": True, "value": arg_val}
+            args_to_remove.append(arg)
 
+            # add value to arg list for builtin functions
+            func_args_values.append(arg_val)
 
         # check if function is in std lib or user defined
         if env["funcs"][self.f_id]["body"]:
@@ -714,28 +743,33 @@ class CallExp(Exp):
                 env["cur_ret_id"] = self.f_ret
 
             # run user function and return val
-            env = env["funcs"][self.f_id]["body"].execute(env)
+            tmp_ret_val, env = env["funcs"][self.f_id]["body"].execute(env)
 
             # remove ret id to env
             if self.f_ret:
                 env["cur_ret_id"] = ""
 
             # return value
-            print("FINISED HERE")
         else:
-            # check if ret id is in env
+            # check that ret_id is set
             if self.f_ret:
+                print("its ya boi")
+                # check if ret_id is in env
                 if not self.f_ret in env["vars"].keys():
                     execute_error("ret id doesn't exist")
 
-            # run std lib function and return val
-            ret_val = env["funcs"][self.f_id]["fnc"](self.f_args.values())
-            env["vars"][self.f_ret] = ret_val
-        
+                # run std lib function and return val
+                ret_val = env["funcs"][self.f_id]["fnc"](func_args_values)
+                env["vars"][self.f_ret]["value"] = ret_val
+            else:
+                # run std lib function
+                ret_val = env["funcs"][self.f_id]["fnc"](*func_args_values)
+
         # remove args from env
+        for arg in args_to_remove:
+            env["vars"].pop(arg)
         
-        print(env)
-        return env
+        return (None, env)
 
 class BreakExp(Exp):
     def __init__(self):
@@ -774,9 +808,23 @@ class ForExp(Exp):
         exp_str += self.e_body.print_exp(level+1)
         return exp_str
     
-    def execute(self):
-        exit(0)
-        return "RUN FOR EXP"
+    def execute(self, env):
+        # check that iterable is a list
+        id_type = env["vars"][self.iter_id]["type"]
+        if id_type != "list":
+            execute_error("")
+
+        iter_list = env["vars"][self.iter_id]["value"]
+
+        # loop over iterable _id
+        for item in iter_list:
+            # set item variable in environment
+            env["vars"]["item"] = {"const": True, "type": get_jordie_type(item), "value": item}
+            
+            # run BodyExp
+            ret_val, env = self.e_body.execute(env)
+
+        return (None, env)
 
 class FuncExp(Exp):
     def __init__(self, _id, _type, _args, _body):
@@ -803,7 +851,7 @@ class FuncExp(Exp):
         #print(self.f_id)
         #print(self.f_args)
         env["funcs"][self.f_id] = {"type": self.f_type, "args": self.f_args, "body": self.f_body, "fnc": None}
-        return env
+        return (None, env)
 
 class RetExp(Exp):
     def __init__(self, _val):
@@ -962,20 +1010,14 @@ def parse_declare_exp(token_list):
                     cnt += 1
         else:
             parse_error("")
-        #print("$$$$$$$$")
-        #print(f_args)
-        #print("########")
+        
         f_body = BodyExp()
         while(not token == ("kw", "close-curly-brace")):
-            #print("another go around")
-            #print(token)
-            #print(token_list[:10])
-            next_exp, token_list = get_next_exp(token_list)
-            f_body.append(next_exp)
-            if len(token_list) < 1:
-                #print("YOYOYEET")
-                return (FuncExp(f_id, f_type, f_args, f_body), token_list)
-            token = token_list[0]
+            tmp_exp, token_list = parse_next_exp(token_list)
+            f_body.append(tmp_exp)
+            if token_list[0] == ("kw", "close-curly-brace"):
+                break
+
         token, token_list = pop_token(token_list)
         #print("FORTRAN")
         return (FuncExp(f_id, f_type, f_args, f_body), token_list)
@@ -1073,29 +1115,9 @@ def parse_set_exp(token_list):
     #t_val.build_tree()
     return (SetExp(t_id, t_val, t_field_id), token_list)
 
-def parse_while_exp(token_list):
-    #print("While")
-    cond_exp = None
-    body_exp = None
-
-    cond_tokens = []
-    token, token_list = pop_token(token_list)
-    while(not token == ("kw", "open-curly-brace")):
-        cond_tokens.append(token)
-        token, token_list = pop_token(token_list)
-    cond_exp = CondExp(cond_tokens)
-    cond_exp.build_cond_tree()
-
-    body_exp = BodyExp()
-    while(not token == ("kw", "close-curly-brace")):
-        next_exp, token_list = get_next_exp(token_list)
-        body_exp.append(next_exp)
-        token = token_list[0]
-    token, token_list = pop_token(token_list)
-    return (WhileExp(cond_exp, body_exp), token_list)
-
 def parse_call_exp(token_list):
     #print("Call")
+    #print("da boi")
     func_id = None
     args = {}
     ret_id = None
@@ -1115,12 +1137,15 @@ def parse_call_exp(token_list):
             token, token_list = pop_token(token_list)
             cnt = 1 # another spot to update arg names
             while(not (token == ("kw", "return") or token == ("kw", "semicolon"))):
+                #print("ya boi again")
                 if token == ("kw", "and"):
                     # this is where i would make a change to allow expressions inside call params
                     # nop
                     token, token_list = pop_token(token_list)
                 else:
-                    args["argument-{}".format(str(cnt))] = token
+                    #turn token into ValExp
+                    tmp_val = ValExp(token)
+                    args["argument-{}".format(str(cnt))] = tmp_val
                     token, token_list = pop_token(token_list)
                     cnt += 1
             if token == ("kw", "return"):
@@ -1182,11 +1207,45 @@ def parse_for_exp(token_list):
     body_exp = BodyExp()
     token, token_list = pop_token(token_list)
     while(not token == ("kw", "close-curly-brace")):
-        next_exp, token_list = get_next_exp(token_list)
-        body_exp.append(next_exp)
-        token = token_list[0]
+        tmp_exp, token_list = parse_next_exp(token_list)
+        body_exp.append(tmp_exp)
+
+        if token_list[0] == ("kw", "close-curly-brace"):
+            break
+
     token, token_list = pop_token(token_list)
     return (ForExp(items, body_exp), token_list)
+
+def parse_while_exp(token_list):
+    #print("While")
+    #print(token_list[:10])
+    cond_exp = None
+    body_exp = None
+
+    cond_tokens = []
+    token, token_list = pop_token(token_list)
+    while token != ("kw", "open-curly-brace"):
+        cond_tokens.append(token)
+        token, token_list = pop_token(token_list)
+    cond_exp = parse_value_tokens(cond_tokens)
+    #cond_exp = CondExp(cond_tokens)
+    #cond_exp.build_cond_tree()
+    #print(cond_exp)
+    #exit(0)
+
+    body_exp = BodyExp()
+    while(not token == ("kw", "close-curly-brace")):
+        #next_exp, token_list = get_next_exp(token_list)
+        #body_exp.append(next_exp)
+        #token = token_list[0]
+        tmp_exp, token_list = parse_next_exp(token_list)
+        body_exp.append(tmp_exp)
+
+        if token_list[0] == ("kw", "close-curly-brace"):
+            break
+
+    token, token_list = pop_token(token_list)
+    return (WhileExp(cond_exp, body_exp), token_list)
 
 def parse_return_exp(token_list):
     val_tokens = []
@@ -1303,6 +1362,38 @@ def parse_exit_exp(token_list):
     #print("Exit")
     return (ExitExp(), token_list)
 
+def parse_next_exp(token_list):
+    token, token_list = pop_token(token_list)
+    tmp_exp = None
+    if token == ("kw", "retrieve"):
+        tmp_exp, token_list = parse_retrieve_exp(token_list)
+    elif token == ("kw", "declare"):
+        tmp_exp, token_list = parse_declare_exp(token_list)
+    elif token == ("kw", "set"):
+        tmp_exp, token_list = parse_set_exp(token_list)
+    elif token == ("kw", "while"):
+        tmp_exp, token_list = parse_while_exp(token_list)
+    elif token == ("kw", "call"):
+        tmp_exp, token_list = parse_call_exp(token_list)
+    elif token == ("kw", "break"):
+        tmp_exp, token_list = parse_break_exp(token_list)
+    elif token == ("kw", "jump"):
+        tmp_exp, token_list = parse_jump_exp(token_list)
+    elif token == ("kw", "for"):
+        tmp_exp, token_list = parse_for_exp(token_list)
+    elif token == ("kw", "return"):
+        tmp_exp, token_list = parse_return_exp(token_list)
+    elif token == ("kw", "if"):
+        tmp_exp, token_list = parse_if_exp(token_list)
+    elif token == ("kw", "try"):
+        tmp_exp, token_list = parse_try_exp(token_list)
+    elif token == ("kw", "exit"):
+        tmp_exp, token_list = parse_exit_exp(token_list)
+    else:
+        print(token)
+        parse_error("Unknown Exp: YEETO 2")
+    return (tmp_exp, token_list)
+
 class AST:
     def __init__(self):
         self.head = BodyExp()
@@ -1337,7 +1428,7 @@ class AST:
             elif token == ("kw", "exit"):
                 tmp_exp, token_list = parse_exit_exp(token_list)
             else:
-                parse_error("Unknown Exp: YEETO")
+                parse_error("Unknown Exp: YEETO 1")
             self.head.append(tmp_exp)
 
     def print_tree(self):
@@ -1345,6 +1436,9 @@ class AST:
     
     def get_tree(self):
         return self.head.print_exp(0)
+    
+    def get_body(self):
+        return self.head
 
     def create_env(self):
         self.env = {
