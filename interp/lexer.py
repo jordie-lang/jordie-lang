@@ -1,16 +1,10 @@
 """
 jordie-lang lexer
 
-Tokens:
-("kw", "define")
-("kw", "semicolon")
-("id", "addnums")
-("id", "number_one")
-("val", 8)
-("val", "hello there")
-("op", "with")
-("op", "value")
 """
+
+from pprint import pprint
+
 kw_list = ["declare", "nonchangeable", "functional", "changeable", "construct", "named", "of", "type", "with", "value"]
 type_list = ["integer", "string"]
 id_list = []
@@ -20,153 +14,122 @@ eol = "semicolon"
 open_blk = "open-curly-brace"
 close_blk = "close-curly-brace"
 
-def lex_error(error_msg):
-    print(error_msg)
+def lex_error(ln, ecc, error_msg):
+    print(f"syntax error ({ln},{ecc}): {error_msg}.")
     exit(0)
 
-def remove_comments(source_string):
-    comment_locations = [i for i in range(len(source_string)) if source_string.startswith("comment", i)]
-    tmp_locs = iter(comment_locations)
-    comment_locations = list(zip(tmp_locs, tmp_locs))
-    comment_locations.reverse()
-    for comment in comment_locations:
-        source_string = source_string[:comment[0]] + source_string[comment[1]+7:]
-    return source_string
+def pop_next_element(s, ln, cc):
+    tmp_elem = ""
+    ecc = cc
+    
+    while(s):
+        if (s[0] == "\n" or s[0] == "\r" or s[0] == "\n\r" or s[0] == "\r\n") and tmp_elem == "":
+            # add to newline count, reset character count
+            ln += 1
+            cc = 1
+            ecc = 1
+        elif (s[0] == "\n" or s[0] == "\r" or s[0] == "\n\r" or s[0] == "\r\n") and tmp_elem != "":
+            break
+        elif s[0] == " " and tmp_elem == "":
+            cc += 1
+            ecc += 1
+        elif s[0] == " ":
+            # end of element, return new element
+            cc += 1
+            s = s[1:]
+            break
+        else:
+            tmp_elem += s[0]
+            cc += 1
+        s = s[1:]
+    
+    return (tmp_elem, s, ln, cc, ecc)
 
-def remove_excess_whitespace(source_string):
-    # Remove string values
-    string_locations = [i for i in range(len(source_string)) if source_string.startswith("double-quote", i)]
-    tmp_locs = iter(string_locations)
-    string_locations = list(zip(tmp_locs, tmp_locs))
-    string_locations.reverse()
-    string_values = []
-    for string in string_locations:
-        string_values.append(source_string[string[0]+12:string[1]])
-        source_string = source_string[:string[0]+13] + source_string[string[1]:]
-
-    # Remove excess whitespace
-    source_string = ' '.join(source_string.split())
-
-    # Replace string values
-    string_locations = [i for i in range(len(source_string)) if source_string.startswith("double-quote", i)]
-    tmp_locs = iter(string_locations)
-    string_locations = list(zip(tmp_locs, tmp_locs))
-    string_locations.reverse()
-    for loc, value in zip(string_locations, string_values):
-        start_index = loc[0] + 12
-        source_string = source_string[:start_index] + value + source_string[start_index+1:]
-    return source_string
-
-def pop_next_element(source_string):
-    tmp_list = source_string.split(' ')
-    tmp_elem = tmp_list[0]
-    source_string = ' '.join(tmp_list[1:])
-    return (tmp_elem, source_string)
-
-def get_string_value(source_string):
+def get_string_value(source_string, ln, cc):
+    ecc = cc
     end_index = source_string.find("double-quote")
     string_val = source_string[:end_index-1]
     source_string = source_string[end_index+13:]
-    return (string_val, source_string)
+    cc += end_index + 13
+    return (string_val, source_string, ln, cc, ecc)
 
-def get_list_value(source_string):
+def get_list_value(source_string, ln, cc):
     end_index = source_string.find("close-square-bracket")
     list_source = source_string[:end_index]
     list_val = []
     while list_source:
-        list_item, list_source = pop_next_value(list_source)
+        list_item, list_source, ln, cc, ecc = pop_next_value(list_source, ln, cc)
         list_val.append(list_item)
     source_string = source_string[end_index+21:]
-    return (list_val, source_string)
+    cc += end_index + 21
+    return (list_val, source_string, ln, cc, ecc)
 
-def get_dict_value(source_string):
+def get_dict_value(source_string, ln, cc):
+    ecc = cc
     end_index = source_string.find("close-curly-brace")
     dict_source = source_string[:end_index]
     dict_val = {}
     while dict_source:
-        dict_item_key, dict_item_val, dict_source = pop_next_pair(dict_source)
+        dict_item_key, dict_item_val, dict_source, ln, cc = pop_next_pair(dict_source, ln, cc)
         dict_val[dict_item_key] = dict_item_val
     source_string = source_string[end_index+18:]
-    return (dict_val, source_string)
+    cc += end_index + 18
+    return (dict_val, source_string, ln, cc, ecc)
 
-def get_struct_fields(source_string):
+def get_struct_fields(source_string, ln, cc):
     tmp_tokens = []
     
     while(source_string):
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "close-curly-brace"):
-            tmp_tokens.append(("kw", tmp_elem))
-            return (tmp_tokens, source_string)
+            tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
+            return (tmp_tokens, source_string, ln, cc, ecc)
         elif(tmp_elem == "field"):
-            tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "named"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
-                tmp_tokens.append(("id", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "of"):
-                    #tmp_tokens.append(("kw", "of"))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == "type"):
-                        #tmp_tokens.append(("kw", "type"))
-                        tmp_elem, source_string = pop_next_element(source_string)
-                        tmp_tokens.append(("type", tmp_elem))
-                        tmp_elem, source_string = pop_next_element(source_string)
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                        tmp_tokens.append(("type", tmp_elem, f"{ln},{ecc}"))
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                         if(tmp_elem == eol):
-                            tmp_tokens.append(("kw", eol))
+                            tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
                         else:
-                            lex_error("Error 5_1: Expected EOL.")
+                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
                     else:
-                        lex_error("Error 5_2: Expected type.")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'type'")
                 else:
-                    lex_error("Error 5_3: Expected of.")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'of'")
             else:
-                lex_error("Error 5_4: Expected named.")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
         else:
-            lex_error("Error 5_5: Expected field or close-curly-brace.")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'field' or 'close-curly-brace'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def pop_next_value(source_string):
-    tmp_elem, source_string = pop_next_element(source_string)
+def pop_next_value(source_string, ln, cc):
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "double-quote"): # Handle strings
-        return get_string_value(source_string)
+        return get_string_value(source_string, ln, cc)
     elif(tmp_elem == "open-square-bracket"): # Handle lists
-        return get_list_value(source_string)
+        return get_list_value(source_string, ln, cc)
     elif(tmp_elem == "open-curly-brace"): # Handle dicts
-        return get_dict_value(source_string)
+        return get_dict_value(source_string, ln, cc)
     else:
         if(tmp_elem == "true"): # Handle boolean True
-            return (True, source_string)
+            return (True, source_string, ln, cc, ecc)
         elif(tmp_elem == "false"): # Handle boolean False
-            return (False, source_string)
+            return (False, source_string, ln, cc, ecc)
         else: # Handle Numbers or identifiers
             if is_valid_number(tmp_elem):
-                #check_valid_number(tmp_elem)
                 num_val = convert_text_to_num(tmp_elem)
-                return (num_val, source_string)
+                return (num_val, source_string, ln, cc, ecc)
             else:
-                return (("id", tmp_elem), source_string)
-
-def pop_next_val_exp(source_string): #what is a val exp and when would it end? 2 ids?
-    tmp_elem, source_string = pop_next_element(source_string)
-    if(tmp_elem == "double-quote"): # Handle strings
-        return get_string_value(source_string)
-    elif(tmp_elem == "open-square-bracket"): # Handle lists
-        return get_list_value(source_string)
-    elif(tmp_elem == "open-curly-brace"): # Handle dicts
-        return get_dict_value(source_string)
-    else:
-        if(tmp_elem == "true"): # Handle boolean True
-            return (True, source_string)
-        elif(tmp_elem == "false"): # Handle boolean False
-            return (False, source_string)
-        else: # Handle Numbers or identifiers
-            if is_valid_number(tmp_elem):
-                #check_valid_number(tmp_elem)
-                num_val = convert_text_to_num(tmp_elem)
-                return (num_val, source_string)
-            else:
-                return (("id", tmp_elem), source_string)
+                return (("id", tmp_elem), source_string, ln, cc, ecc)
 
 """
 val
@@ -178,25 +141,19 @@ counter op counter
 val op val op val
 """
 
-def pop_next_pair(source_string):
-    tmp_elem, source_string = pop_next_element(source_string)
+def pop_next_pair(source_string, ln, cc):
+    _cc = cc
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "key"):
-        tmp_key, source_string = pop_next_value(source_string)
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_key, source_string, ln, cc, ecc = pop_next_value(source_string, ln, cc)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "value"):
-            tmp_value, source_string = pop_next_value(source_string)
+            tmp_value, source_string, ln, cc, _cc = pop_next_value(source_string, ln, cc)
         else:
-            lex_error("Error 22_2: Expected value.")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'value'")
     else:
-        lex_error("Error 22_1: Expected key.")
-    return(tmp_key, tmp_value, source_string)
-
-def get_all_elements(source_string):
-    tmp_elements = []
-    while(source_string):
-        tmp_elem, source_string = pop_next_element(source_string)
-        tmp_elements.append(tmp_elem)
-    return tmp_elements
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'key'")
+    return(tmp_key, tmp_value, source_string, ln, ecc)
 
 op_list = [
     "and",
@@ -211,60 +168,60 @@ op_list = [
     "divides"
 ]
 # end_string = "run"
-# source_string = "number_six is greater than six and true run the fo"
-def pop_val_exp(source_string, end_string):
+# source_string = "number_six is greater than six and true then run the fo"
+def pop_val_exp(source_string, end_string, ln, cc):
     tmp_tokens = []
     end_index = source_string.find(end_string)
     exp_string = source_string[:end_index]
     source_string = source_string[end_index:]
 
     while(exp_string):
-        tmp_elem, exp_string = pop_next_element(exp_string)
+        tmp_elem, exp_string, ln, cc, ecc = pop_next_element(exp_string, ln, cc)
         if(tmp_elem == "and" or tmp_elem == "or" or tmp_elem == "not" or tmp_elem == "plus" or tmp_elem == "minus" or tmp_elem == "times" or tmp_elem == "divides"):
-            tmp_tokens.append(("op", tmp_elem))
+            tmp_tokens.append(("op", tmp_elem, f"{ln},{ecc}"))
         elif(tmp_elem == "is"):
-            tmp_elem, exp_string = pop_next_element(exp_string)
+            tmp_elem, exp_string, ln, cc, ecc = pop_next_element(exp_string, ln, cc)
             if(tmp_elem == "equal"):
-                tmp_elem, exp_string = pop_next_element(exp_string)
+                tmp_elem, exp_string, ln, cc, ecc = pop_next_element(exp_string, ln, cc)
                 if(tmp_elem == "to"):
-                    tmp_tokens.append(("op", "is equal to"))
+                    tmp_tokens.append(("op", "is equal to", f"{ln},{ecc}"))
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'to'")
             elif(tmp_elem == "greater"):
-                tmp_elem, exp_string = pop_next_element(exp_string)
+                tmp_elem, exp_string, ln, cc, ecc = pop_next_element(exp_string, ln, cc)
                 if(tmp_elem == "than"):
-                    tmp_tokens.append(("op", "is greater than"))
+                    tmp_tokens.append(("op", "is greater than", f"{ln},{ecc}"))
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'than'")
             elif(tmp_elem == "less"):
-                tmp_elem, exp_string = pop_next_element(exp_string)
+                tmp_elem, exp_string, ln, cc, ecc = pop_next_element(exp_string, ln, cc)
                 if(tmp_elem == "than"):
-                    tmp_tokens.append(("op", "is less than"))
+                    tmp_tokens.append(("op", "is less than", f"{ln},{ecc}"))
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'than'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'equal', 'greater', or 'less'")
         else:
             if(is_valid_number(tmp_elem)):
                 num_val = convert_text_to_num(tmp_elem)
-                tmp_tokens.append(("val", num_val))
+                tmp_tokens.append(("val", num_val, f"{ln},{ecc}"))
             elif(tmp_elem == "true" or tmp_elem == "false"):
                 if tmp_elem == "true":
-                    tmp_tokens.append(("val", True))
+                    tmp_tokens.append(("val", True, f"{ln},{ecc}"))
                 else:
-                    tmp_tokens.append(("val", False))
+                    tmp_tokens.append(("val", False, f"{ln},{ecc}"))
             elif(tmp_elem == "double-quote"):
-                str_val, exp_string = get_string_value(exp_string)
-                tmp_tokens.append(("val", str_val))
+                str_val, exp_string, ln, cc, ecc = get_string_value(exp_string, ln, cc)
+                tmp_tokens.append(("val", str_val, f"{ln},{ecc}"))
             elif(tmp_elem == "open-square-bracket"):
-                list_val, exp_string = get_list_value(exp_string)
-                tmp_tokens.append(("val", list_val))
+                list_val, exp_string, ln, cc, ecc = get_list_value(exp_string, ln, cc)
+                tmp_tokens.append(("val", list_val, f"{ln},{ecc}"))
             elif(tmp_elem == "open-curly-brace"):
-                dict_val, exp_string = get_dict_value(exp_string)
-                tmp_tokens.append(("val", dict_val))
+                dict_val, exp_string, ln, cc, ecc = get_dict_value(exp_string, ln, cc)
+                tmp_tokens.append(("val", dict_val, f"{ln},{ecc}"))
             else:
-                tmp_tokens.append(("id", tmp_elem))
-    return(tmp_tokens, source_string)
+                tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+    return(tmp_tokens, source_string, ln, cc, ecc)
 
 valid_num_parts = {
     "dot": None,
@@ -302,12 +259,6 @@ valid_num_parts = {
     "million": 1000000,
     "billion": 1000000000
 }
-
-def check_valid_number(num_str):
-    num_parts = num_str.split("-")
-    for part in num_parts:
-        if part not in valid_num_parts.keys():
-            lex_error("Invalid Number: {}".format(num_str))
 
 def is_valid_number(num_str):
     num_parts = num_str.split("-")
@@ -354,790 +305,764 @@ def convert_text_to_num(num_str):
         cur_num = round(cur_num, num_decimal_parts)
     return cur_num
 
-def kw_retrieve(source_string):
+def kw_retrieve(source_string, ln, cc, ecc):
+    #print("kw_retrieve")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "retrieve"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "retrieve", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     
     if(tmp_elem == "source"):
-        #tmp_tokens.append(("kw", "source"))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "from"):
-            #tmp_tokens.append(("kw", "from"))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "file"):
-                #tmp_tokens.append(("kw", "file"))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "named"):
-                    #tmp_tokens.append(("kw", "named"))
-                    tmp_elem, source_string = pop_next_element(source_string)
-                    tmp_tokens.append(("id", tmp_elem))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                    tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == eol):
-                        tmp_tokens.append(("kw", eol))
+                        tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
                     else:
-                        lex_error("Error 1_1: Expected EOL.")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
                 else:
-                    lex_error("Error 1_2: Expected named.")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
             else:
-                lex_error("Error 1_3: Expected file.")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'file'")
         else:
-            lex_error("Error 1_4: Expected from.")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'from'")
     else:
-        lex_error("Error 1_5: Expected source.")
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'source'")
 
-    return tmp_tokens, source_string
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_declare(source_string):
+def kw_declare(source_string, ln, cc, ecc):
+    #print("kw_declare")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "declare"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "declare", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
 
     if(tmp_elem == "nonchangeable" or tmp_elem == "changeable"):
         if(tmp_elem == "nonchangeable"):
-            tmp_tokens.append(("kw", "nonchangeable"))
+            tmp_tokens.append(("kw", "nonchangeable", f"{ln},{ecc}"))
         else:
-            tmp_tokens.append(("kw", "changeable"))
-        tmp_elem, source_string = pop_next_element(source_string)
+            tmp_tokens.append(("kw", "changeable", f"{ln},{ecc}"))
+        
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "construct"):
-            #tmp_tokens.append(("kw", "construct"))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "named"):
-                #tmp_tokens.append(("kw", "named"))
-                tmp_elem, source_string = pop_next_element(source_string)
-                tmp_tokens.append(("id", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "of"):
-                    #tmp_tokens.append(("kw", "of"))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == "type"):
-                        #tmp_tokens.append(("kw", "type"))
-                        tmp_elem, source_string = pop_next_element(source_string)
-                        tmp_tokens.append(("type", tmp_elem))
-                        tmp_elem, source_string = pop_next_element(source_string)
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                        tmp_tokens.append(("type", tmp_elem, f"{ln},{ecc}"))
+                        
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                         if(tmp_elem == eol):
-                            tmp_tokens.append(("kw", eol))
+                            tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
                         elif(tmp_elem == "with"):
-                            #tmp_tokens.append(("kw", "with"))
-                            tmp_elem, source_string = pop_next_element(source_string)
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                             if(tmp_elem == "value"):
-                                #tmp_tokens.append(("kw", "value"))
-                                tmp_val, source_string = pop_next_value(source_string)
-                                tmp_tokens.append(("val", tmp_val))
-                                tmp_elem, source_string = pop_next_element(source_string)
+                                tmp_val, source_string, ln, cc, ecc = pop_next_value(source_string, ln, cc)
+                                tmp_tokens.append(("val", tmp_val, f"{ln},{ecc}"))
+                                
+                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                
                                 if(tmp_elem == eol):
-                                    tmp_tokens.append(("kw", eol))
+                                    tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
                                 else:
-                                    lex_error("Error 1: Expected EOL.")
+                                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
                             else:
-                                lex_error("Error 2: Expected value.")
+                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'value'")
                         else:
-                            lex_error("Error 3: Expected EOL or with.")
+                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon' or 'with'")
                     else:
-                        lex_error("Error 4: Expected type.")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'type'")
                 else:
-                    lex_error("Error 5: Expected of.")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'of'")
             else:
-                lex_error("Error 6: Expected named.")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
         else:
-            lex_error("Error 7: Expected construct.")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct'")
     elif(tmp_elem == "functional"):
-        tmp_tokens.append(("kw", "functional"))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_tokens.append(("kw", "functional", f"{ln},{ecc}"))
+        
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "construct"):
-            #tmp_tokens.append(("kw", "construct"))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "named"):
-                #tmp_tokens.append(("kw", "named"))
-                tmp_elem, source_string = pop_next_element(source_string)
-                tmp_tokens.append(("id", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "which"):
-                    #tmp_tokens.append(("kw", "which"))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == "returns"):
-                        tmp_tokens.append(("kw", "returns"))
-                        tmp_elem, source_string = pop_next_element(source_string)
+                        tmp_tokens.append(("kw", "returns", f"{ln},{ecc}"))
+                        
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                         if(tmp_elem == "type"):
-                            #tmp_tokens.append(("kw", "type"))
-                            tmp_elem, source_string = pop_next_element(source_string)
-                            tmp_tokens.append(("type", tmp_elem))
-                            tmp_elem, source_string = pop_next_element(source_string)
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                            tmp_tokens.append(("type", tmp_elem, f"{ln},{ecc}"))
+                            
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                             if(tmp_elem == "and"):
-                                #tmp_tokens.append(("kw", "and"))
-                                tmp_elem, source_string = pop_next_element(source_string)
+                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                 if(tmp_elem == "receives"):
-                                    tmp_tokens.append(("kw", "receives"))
-                                    tmp_elem, source_string = pop_next_element(source_string)
+                                    tmp_tokens.append(("kw", "receives", f"{ln},{ecc}"))
+                                    
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                     while(tmp_elem != "open-curly-brace"):
                                         if(tmp_elem == "type"):
-                                            #tmp_tokens.append(("kw", "type"))
-                                            tmp_elem, source_string = pop_next_element(source_string)
-                                            tmp_tokens.append(("type", tmp_elem))
-                                            tmp_elem, source_string = pop_next_element(source_string)
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                            tmp_tokens.append(("type", tmp_elem, f"{ln},{ecc}"))
+                                            
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         elif(tmp_elem == "and"):
-                                            #tmp_tokens.append(("kw", "and"))
-                                            tmp_elem, source_string = pop_next_element(source_string)
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         elif(tmp_elem == "nothing"):
-                                            tmp_tokens.append(("type", "nothing"))
-                                            tmp_elem, source_string = pop_next_element(source_string)
+                                            tmp_tokens.append(("type", "nothing", f"{ln},{ecc}"))
+                                            
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         else:
-                                            lex_error("Error 8: Expected type or nothing.")
+                                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'type' or 'nothing'")
                                     if(tmp_elem == "open-curly-brace"):
-                                        tmp_tokens.append(("kw", "open-curly-brace"))
+                                        tmp_tokens.append(("kw", "open-curly-brace", f"{ln},{ecc}"))
                                     else:
-                                        lex_error("Error 9: Expected open-curly-brace.")
+                                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
                                 else:
-                                    lex_error("Error 10: Expected receives.")
+                                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'receives'")
                             else:
-                                lex_error("Error 11: Expected and.")
+                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'and'")
                         elif(tmp_elem == "nothing"):
-                            tmp_tokens.append(("type", "nothing"))
-                            tmp_elem, source_string = pop_next_element(source_string)
+                            tmp_tokens.append(("type", "nothing", f"{ln},{ecc}"))
+                            
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                             if(tmp_elem == "and"):
-                                #tmp_tokens.append(("kw", "and"))
-                                tmp_elem, source_string = pop_next_element(source_string)
+                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                 if(tmp_elem == "receives"):
-                                    tmp_tokens.append(("kw", "receives"))
-                                    tmp_elem, source_string = pop_next_element(source_string)
+                                    tmp_tokens.append(("kw", "receives", f"{ln},{ecc}"))
+                                    
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                     while(tmp_elem != "open-curly-brace"):
                                         if(tmp_elem == "type"):
-                                            #tmp_tokens.append(("kw", "type"))
-                                            tmp_elem, source_string = pop_next_element(source_string)
-                                            tmp_tokens.append(("type", tmp_elem))
-                                            tmp_elem, source_string = pop_next_element(source_string)
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                            tmp_tokens.append(("type", tmp_elem, f"{ln},{ecc}"))
+                                            
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         elif(tmp_elem == "and"):
-                                            #tmp_tokens.append(("kw", "and"))
-                                            tmp_elem, source_string = pop_next_element(source_string)
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         elif(tmp_elem == "nothing"):
-                                            tmp_tokens.append(("type", "nothing"))
-                                            tmp_elem, source_string = pop_next_element(source_string)
+                                            tmp_tokens.append(("type", "nothing", f"{ln},{ecc}"))
+                                            
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         else:
-                                            lex_error("Error 12: Expected type or nothing.")
+                                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'type' or 'nothing'")
                                     if(tmp_elem == "open-curly-brace"):
-                                        tmp_tokens.append(("kw", "open-curly-brace"))
+                                        tmp_tokens.append(("kw", "open-curly-brace", f"{ln},{ecc}"))
                                     else:
-                                        lex_error("Error 13: Expected open-curly-brace.")
+                                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
                                 else:
-                                    lex_error("Error 14: Expected receives.")
+                                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'receives'")
                             else:
-                                lex_error("Error 15: Expected and.")
+                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'and'")
                         else:
-                            lex_error("Error 16: Expected type or nothing.")
+                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'type' or 'nothing'")
                     else:
-                        lex_error("Error 17: Expected returns.")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'returns'")
                 else:
-                    lex_error("Error 18: Expected which.")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'which'")
             else:
-                lex_error("Error 19: Expected named.")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
         else:
-            lex_error("Error 20: Expected construct.")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct'")
     elif(tmp_elem == "structure"):
-        tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
+        
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "named"):
-            #tmp_tokens.append(("kw", "named"))
-            tmp_elem, source_string = pop_next_element(source_string)
-            tmp_tokens.append(("id", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+            tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+            
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "open-curly-brace"):
-                tmp_tokens.append(("kw", "open-curly-brace"))
-                struct_tokens, source_string = get_struct_fields(source_string)
+                tmp_tokens.append(("kw", "open-curly-brace", f"{ln},{ecc}"))
+                
+                struct_tokens, source_string, ln, cc, ecc = get_struct_fields(source_string, ln, cc)
                 tmp_tokens += struct_tokens
             else:
-                lex_error("Error 99: Expected open-curly-brace.")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
         else:
-            lex_error("Error 98: Expected named.")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
     else:
-        lex_error("Error 21: Expected changeable, nonchangeable, or functional.")
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'changeable', 'nonchangeable', 'functional', or 'structure'")
 
-    return (tmp_tokens, source_string)
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_set(source_string):
+def kw_set(source_string, ln, cc, ecc):
+    #print("kw_set")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "set"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "set", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     
     if(tmp_elem == "construct"):
         #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "named"):
             #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
-            tmp_tokens.append(("id", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+            tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "with"):
                 #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "value"):
-                    exp_tokens, source_string = pop_val_exp(source_string, eol)
+                    exp_tokens, source_string, ln, cc, ecc = pop_val_exp(source_string, eol, ln, cc)
                     tmp_tokens += exp_tokens
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == eol):
-                        tmp_tokens.append(("kw", eol))
+                        tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
                     else:
-                        lex_error("Error 3_1: Expected EOL.")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
                 else:
-                    lex_error("Error 3_2: Expected named.")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
             else:
-                lex_error("Error 3_3: Expected file.")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'file'") #unsure what file means here
         else:
-            lex_error("Error 3_4: Expected from.")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'from'")
     elif(tmp_elem == "field"):
-        tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "named"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
-            tmp_tokens.append(("id", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+            tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "of"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "construct"):
-                    #tmp_tokens.append(("kw", tmp_elem))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == "named"):
-                        #tmp_tokens.append(("kw", tmp_elem))
-                        tmp_elem, source_string = pop_next_element(source_string)
-                        tmp_tokens.append(("id", tmp_elem))
-                        tmp_elem, source_string = pop_next_element(source_string)
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                        tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                         if(tmp_elem == "with"):
-                            #tmp_tokens.append(("kw", tmp_elem))
-                            tmp_elem, source_string = pop_next_element(source_string)
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                             if(tmp_elem == "value"):
-                                #tmp_tokens.append(("kw", tmp_elem))
                                 if(source_string[:4] == "from"):
-                                    tmp_elem, source_string = pop_next_element(source_string)
-                                    #tmp_tokens.append(("kw", "from"))
-                                    tmp_elem, source_string = pop_next_element(source_string)
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                     if(tmp_elem == "construct"):
-                                        #tmp_tokens.append(("kw", tmp_elem))
-                                        tmp_elem, source_string = pop_next_element(source_string)
+                                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         if(tmp_elem == "named"):
-                                            #tmp_tokens.append(("kw", tmp_elem))
-                                            tmp_elem, source_string = pop_next_element(source_string)
-                                            tmp_tokens.append(("id", tmp_elem))
-                                            tmp_elem, source_string = pop_next_element(source_string)
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                            tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         else:
-                                            lex_error("Error 3_6: Expected named.")
+                                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
                                     else:
-                                        lex_error("Error 3_7: Expected construct.")
+                                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct'")
                                 else:
-                                    tmp_val, source_string = pop_next_value(source_string)
-                                    tmp_tokens.append(("val", tmp_val))
-                                    tmp_elem, source_string = pop_next_element(source_string)
+                                    tmp_val, source_string, ln, cc, ecc = pop_next_value(source_string, ln, cc)
+                                    tmp_tokens.append(("val", tmp_val, f"{ln},{ecc}"))
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                 if(tmp_elem == eol):
-                                    tmp_tokens.append(("kw", eol))
+                                    tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
                                 else:
-                                    lex_error("Error")
+                                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
                             else:
-                                lex_error("Error")
+                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected value")
                         else:
-                            lex_error("Error")
+                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'with'")
                     else:
-                        lex_error("Error")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
                 else:
-                    lex_error("Error")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct'")
             else:
-                lex_error("Error")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'of'")
         else:
-            lex_error("Error")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
     else:
-        lex_error("Error 3_5: Expected source.")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'source'") # not sure what source is here
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_close_block(source_string):
+def kw_close_block(source_string, ln, cc, ecc):
+    #print("kw_close_block")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "close-curly-brace"))
+    tmp_tokens.append(("kw", "close-curly-brace", f"{ln},{ecc}"))
 
-    return (tmp_tokens, source_string)
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_call(source_string):
+def kw_call(source_string, ln, cc, ecc):
+    #print("kw_call")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "call"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "call", f"{ln},{ecc}"))
+    
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
 
     if(tmp_elem == "functional"):
-        tmp_tokens.append(("kw", "functional"))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_tokens.append(("kw", "functional", f"{ln},{ecc}"))
+        
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "construct"):
-            #tmp_tokens.append(("kw", "construct"))
-            tmp_elem, source_string = pop_next_element(source_string)
+            
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "named"):
-                #tmp_tokens.append(("kw", "named"))
-                tmp_elem, source_string = pop_next_element(source_string)
-                tmp_tokens.append(("id", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "and"):
-                    #tmp_tokens.append(("kw", "and"))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == "pass"):
-                        tmp_tokens.append(("kw", "pass"))
-                        tmp_elem, source_string = pop_next_element(source_string)
-                        if(tmp_elem == "in"):
-                            #tmp_tokens.append(("kw", "in"))
-                            #tmp_elem, source_string = pop_next_element(source_string)
-                            while(not (tmp_elem == "return" or tmp_elem == eol)):
-                                #print("bibiddy babiddy booo")
-                                #print(tmp_elem)
-                                #print(source_string[:30])
-                                tmp_val, source_string = pop_next_value(source_string)
-                                #tmp_val_tokens, source_string = pop_next_val_exp(source_string)
+                        tmp_tokens.append(("kw", "pass", f"{ln},{ecc}"))
                         
-                                #print("yo yo yo")
-                                #print(tmp_val)
-                                if type(tmp_val) is tuple:
-                                    tmp_tokens.append(("id", tmp_val[1]))
-                                else:
-                                    tmp_tokens.append(("val", tmp_val))
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                        if(tmp_elem == "in"):
+                            while(not (tmp_elem == "return" or tmp_elem == eol)):
+                                tmp_val, source_string, ln, cc, ecc = pop_next_value(source_string, ln, cc)
+                        
                                 
-                                #tmp_tokens += tmp_val_tokens
-                                tmp_elem, source_string = pop_next_element(source_string)
-                                #print("yeet yeet")
-                                #print(tmp_elem)
+                                if type(tmp_val) is tuple:
+                                    tmp_tokens.append(("id", tmp_val[1], f"{ln},{ecc}"))
+                                else:
+                                    tmp_tokens.append(("val", tmp_val, f"{ln},{ecc}"))
+                                
+                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                
                                 if(tmp_elem == "and"):
-                                    #print("positive yeeting")
-                                    tmp_tokens.append(("kw", tmp_elem))
-                                    #tmp_elem, source_string = pop_next_element(source_string)
-                                    #print("end of positive yeeting")
-                                    #print(tmp_elem)
+                                    tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
+                                    
                                     tmp_source_string = source_string
-                                    tmp_elem, source_string = pop_next_element(source_string)
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                     source_string = tmp_source_string
-                            #print("WHAT IF HIS FINGER PRINTS CAN TOO?")
-                            #print(tmp_elem)
-                            #print(source_string[:30])
-                            if tmp_tokens[-1] == ("kw", "and"):
+                            
+                            if tmp_tokens[-1][1] == "and":
                                 tmp_tokens.pop()
-                            #print("YUMMY")
-                            #print(tmp_tokens)
-                            #print(source_string[:30])
-                            #print("END YUMMY")
+                            
                             if(tmp_elem == eol):
-                                tmp_tokens.append(("kw", eol))
+                                tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
                             elif(tmp_elem == "return"):
-                                tmp_elem, source_string = pop_next_element(source_string)
-                                #print("######################")
-                                #print(tmp_elem)
-                                #print(tmp_tokens)
-                                #print(source_string[:30])
-                                #print("######################")
-                                #print("RETURN IS HERE")
-                                tmp_tokens.append(("kw", "return"))
-                                tmp_elem, source_string = pop_next_element(source_string)
-                                #print("************************")
-                                #print(tmp_elem)
-                                #print(tmp_tokens)
-                                #print(source_string[:30])
-                                #print("************************")
+                                
+                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                
+                                tmp_tokens.append(("kw", "return", f"{ln},{ecc}"))
+                                
+                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                
                                 if(tmp_elem == "value"):
-                                    #print("VALUE IS HERE")
-                                    #tmp_tokens.append(("kw", tmp_elem))
-                                    tmp_elem, source_string = pop_next_element(source_string)
+                                    
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                     if(tmp_elem == "to"):
-                                        #tmp_tokens.append(("kw", tmp_elem))
-                                        tmp_elem, source_string = pop_next_element(source_string)
+                                        
+                                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         if(tmp_elem == "construct"):
-                                            #tmp_tokens.append(("kw", tmp_elem))
-                                            tmp_elem, source_string = pop_next_element(source_string)
+                                            
+                                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                             if(tmp_elem == "named"):
-                                                #tmp_tokens.append(("kw", "named"))
-                                                tmp_elem, source_string = pop_next_element(source_string)
-                                                tmp_tokens.append(("id", tmp_elem))
-                                                tmp_elem, source_string = pop_next_element(source_string)
+                                                
+                                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                                tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                                                
+                                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                                 if(tmp_elem == eol):
-                                                    tmp_tokens.append(("kw", tmp_elem))
+                                                    tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                                                 else:
-                                                    lex_error("Error 22: Expected EOL.")
+                                                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
                                             else:
-                                                lex_error("Error 23: Expected named.")
+                                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
                                         else:
-                                            lex_error("Error 24: Expected construct.")
+                                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct'")
                                     else:
-                                        lex_error("Error 25: Expected to.")
+                                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'to'")
                                 else:
-                                    lex_error("Error 26: Expected value.")
+                                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected value")
                             else:
-                                lex_error("Error 27: Expected EOL or return.")
+                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon' or 'return'")
                         else:
-                            lex_error("Error 28: Expected in.")
+                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'in'")
                     elif(tmp_elem == "return"):
-                        tmp_tokens.append(("kw", "return"))
-                        tmp_elem, source_string = pop_next_element(source_string)
+                        tmp_tokens.append(("kw", "return", f"{ln},{ecc}"))
+                        
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                         if(tmp_elem == "value"):
-                            #tmp_tokens.append(("kw", tmp_elem))
-                            tmp_elem, source_string = pop_next_element(source_string)
+                            
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                             if(tmp_elem == "to"):
-                                #tmp_tokens.append(("kw", tmp_elem))
-                                tmp_elem, source_string = pop_next_element(source_string)
+                                
+                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                 if(tmp_elem == "construct"):
-                                    #tmp_tokens.append(("kw", tmp_elem))
-                                    tmp_elem, source_string = pop_next_element(source_string)
+                                    
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                     if(tmp_elem == "named"):
-                                        #tmp_tokens.append(("kw", "named"))
-                                        tmp_elem, source_string = pop_next_element(source_string)
-                                        tmp_tokens.append(("id", tmp_elem))
-                                        tmp_elem, source_string = pop_next_element(source_string)
+                                        
+                                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                                        tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                                        
+                                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         if(tmp_elem == eol):
-                                            tmp_tokens.append(("kw", tmp_elem))
+                                            tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                                         else:
-                                            lex_error("Error 29: Expected EOL.")
+                                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
                                     else:
-                                        lex_error("Error 30: Expected named.")
+                                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
                                 else:
-                                    lex_error("Error 31: Expected construct.")
+                                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct'")
                             else:
-                                lex_error("Error 32: Expected to.")
+                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'to'")
                         else:
-                            lex_error("Error 33: Expected value.")
+                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected value")
                     else:
-                        lex_error("Error 34: Expected pass or return.")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'pass' or 'return'")
                 elif(tmp_elem == eol):
-                    tmp_tokens.append(("kw", tmp_elem))
+                    tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                 else:
-                    lex_error("Error 35: Expected EOL or and.")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon' or 'and'")
             else:
-                lex_error("Error 36: Expected named.")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
         else:
-            lex_error("Error 37: Expected construct.")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct'")
     else:
-        lex_error("Error 38: Expected functional.")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'functional'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_while(source_string):
+def kw_while(source_string, ln, cc, ecc):
+    #print("kw_while")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "while"))
-    exp_tokens, source_string = pop_val_exp(source_string, "run")
+    tmp_tokens.append(("kw", "while", f"{ln},{ecc}"))
+    exp_tokens, source_string, ln, cc, ecc = pop_val_exp(source_string, "run", ln, cc)
     tmp_tokens += exp_tokens
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "run"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "the"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "following"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "open-curly-brace"):
-                    tmp_tokens.append(("kw", tmp_elem))
+                    tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'following'")
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'the'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'run'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_break(source_string):
+def kw_break(source_string, ln, cc, ecc):
+    #print("kw_break")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "break"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "break", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "out"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "of"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "loop"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == eol):
-                    tmp_tokens.append(("kw", tmp_elem))
+                    tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'loop'")
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'of'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'out'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_jump(source_string):
+def kw_jump(source_string, ln, cc, ecc):
+    #print("kw_jump")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "jump"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "jump", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "to"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "next"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "iteration"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == eol):
-                    tmp_tokens.append(("kw", tmp_elem))
+                    tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'iteration'")
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'next'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'to'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_for(source_string):
+def kw_for(source_string, ln, cc, ecc):
+    #print("kw_for")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "for"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "for", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "every"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "item"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "in"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "the"):
-                    #tmp_tokens.append(("kw", tmp_elem))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == "construct"):
-                        #tmp_tokens.append(("kw", tmp_elem))
-                        tmp_elem, source_string = pop_next_element(source_string)
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                         if(tmp_elem == "named"):
-                            #tmp_tokens.append(("kw", "named"))
-                            tmp_elem, source_string = pop_next_element(source_string)
-                            tmp_tokens.append(("id", tmp_elem))
-                            tmp_elem, source_string = pop_next_element(source_string)
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+                            tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                             if(tmp_elem == "do"):
-                                #tmp_tokens.append(("kw", tmp_elem))
-                                tmp_elem, source_string = pop_next_element(source_string)
+                                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                 if(tmp_elem == "the"):
-                                    #tmp_tokens.append(("kw", tmp_elem))
-                                    tmp_elem, source_string = pop_next_element(source_string)
+                                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                     if(tmp_elem == "following"):
-                                        #tmp_tokens.append(("kw", tmp_elem))
-                                        tmp_elem, source_string = pop_next_element(source_string)
+                                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                                         if(tmp_elem == "open-curly-brace"):
-                                            tmp_tokens.append(("kw", tmp_elem))
+                                            tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                                         else:
-                                            lex_error("")
+                                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
                                     else:
-                                        lex_error("")
+                                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'following'")
                                 else:
-                                    lex_error("")
+                                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'the'")
                             else:
-                                lex_error("")
+                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'do'")
                         else:
-                            lex_error("")
+                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
                     else:
-                        lex_error("")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct'")
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'the'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'in'")
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'item'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'every'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_return(source_string):
+def kw_return(source_string, ln, cc, ecc):
+    #print("kw_return")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "return"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "return", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "value"):
-        exp_tokens, source_string = pop_val_exp(source_string, eol)
+        exp_tokens, source_string, ln, cc, ecc = pop_val_exp(source_string, eol, ln, cc)
+        
         tmp_tokens += exp_tokens
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == eol):
-            tmp_tokens.append(("kw", eol))
+            tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'value'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_if(source_string):
+def kw_if(source_string, ln, cc, ecc):
+    #print("kw_if")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "if"))
+    tmp_tokens.append(("kw", "if", f"{ln},{ecc}"))
 
-    exp_tokens, source_string = pop_val_exp(source_string, "run")
+    exp_tokens, source_string, ln, cc, ecc = pop_val_exp(source_string, "run", ln, cc)
     tmp_tokens += exp_tokens
 
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+    
     if(tmp_elem == "run"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "the"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "following"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "open-curly-brace"):
-                    tmp_tokens.append(("kw", tmp_elem))
+                    tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'following'")
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'the'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'run'")
+    
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_or(source_string):
+def kw_or(source_string, ln, cc, ecc):
+    #print("kw_or")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "or"))
+    tmp_tokens.append(("kw", "or", f"{ln},{ecc}"))
 
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "if"):
-        tmp_tokens.append(("kw", tmp_elem))
-        #print("$$$$$$$$$$$$$$$$$$")
-        #print(source_string[:50])
-        #print("##################")
-        exp_tokens, source_string = pop_val_exp(source_string, "run")
-        #print(exp_tokens)
-        #print("******************")
+        tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
+        exp_tokens, source_string, ln, cc, ecc = pop_val_exp(source_string, "run", ln, cc)
+        
         tmp_tokens += exp_tokens
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "run"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "the"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "following"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "open-curly-brace"):
-                    tmp_tokens.append(("kw", tmp_elem))
+                    tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'following'")
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'the'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'run'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_try(source_string):
+def kw_try(source_string, ln, cc, ecc):
+    #print("kw_try")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "try"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "try", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "to"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "run"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "the"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "following"):
-                    #tmp_tokens.append(("kw", tmp_elem))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == "open-curly-brace"):
-                        tmp_tokens.append(("kw", tmp_elem))
+                        tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                     else:
-                        lex_error("")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'following'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'the'")
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'run'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'to'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_catch(source_string):
+def kw_catch(source_string, ln, cc, ecc):
+    #print("kw_catch")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "catch"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "catch", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "error"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "named"):
-            #tmp_tokens.append(("kw", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
-            tmp_tokens.append(("id", tmp_elem))
-            tmp_elem, source_string = pop_next_element(source_string)
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
+            tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
+            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "and"):
-                #tmp_tokens.append(("kw", tmp_elem))
-                tmp_elem, source_string = pop_next_element(source_string)
+                tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "run"):
-                    #tmp_tokens.append(("kw", tmp_elem))
-                    tmp_elem, source_string = pop_next_element(source_string)
+                    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                     if(tmp_elem == "the"):
-                        #tmp_tokens.append(("kw", tmp_elem))
-                        tmp_elem, source_string = pop_next_element(source_string)
+                        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                         if(tmp_elem == "following"):
-                            #tmp_tokens.append(("kw", tmp_elem))
-                            tmp_elem, source_string = pop_next_element(source_string)
+                            tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                             if(tmp_elem == "open-curly-brace"):
-                                tmp_tokens.append(("kw", tmp_elem))
+                                tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
                             else:
-                                lex_error("")
+                                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'open-curly-brace'")
                         else:
-                            lex_error("")
+                            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'following'")
                     else:
-                        lex_error("")
+                        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'the'")
                 else:
-                    lex_error("")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'run'")
             else:
-                lex_error("")
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'and'")
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'error'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_assert(source_string):
+def kw_assert(source_string, ln, cc, ecc):
+    #print("kw_assert")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "assert"))
-    tmp_elem, source_string = pop_next_element(source_string)
+    tmp_tokens.append(("kw", "assert", f"{ln},{ecc}"))
+    tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     if(tmp_elem == "that"):
-        #tmp_tokens.append(("kw", tmp_elem))
-        exp_tokens, source_string = pop_val_exp(source_string, eol)
+        exp_tokens, source_string, ln, cc, ecc = pop_val_exp(source_string, eol, ln, cc)
         tmp_tokens += exp_tokens
-        tmp_elem, source_string = pop_next_element(source_string)
+        tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == eol):
-            tmp_tokens.append(("kw", eol))
+            tmp_tokens.append(("kw", eol, f"{ln},{ecc}"))
         else:
-            lex_error("")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
     else:
-        lex_error("")
-    return (tmp_tokens, source_string)
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'that'")
+    return (tmp_tokens, source_string, ln, cc, ecc)
 
-def kw_exit(source_string):
+def kw_exit(source_string, ln, cc, ecc):
+    #print("kw_exit")
     tmp_tokens = []
-    tmp_tokens.append(("kw", "exit"))
-    return (tmp_tokens, source_string)
+    tmp_tokens.append(("kw", "exit", f"{ln},{ecc}"))
+    return (tmp_tokens, source_string, ln, cc, ecc)
+
+def skip_comment(s, ln, cc):
+    while(s):
+        if s.startswith("comment"):
+            s = s[7:]
+            cc += 7
+            break
+        elif s[0] == "\n" or s[0] == "\r" or s[0] == "\n\r" or s[0] == "\r\n":
+            ln += 1
+            cc = 1
+        else:
+            cc += 1
+        s = s[1:]
+    return (s, ln, cc)
 
 def create_token_list(source_string):
     token_list = []
+    line_number = 1
+    character_count = 1
     while(source_string):
-        tmp_elem, source_string = pop_next_element(source_string)
-        switch = {
-            "retrieve": kw_retrieve,
-            "declare": kw_declare,
-            "set": kw_set,
-            "close-curly-brace": kw_close_block,
-            "call": kw_call,
-            "while": kw_while,
-            "break": kw_break,
-            "jump": kw_jump,
-            "for": kw_for,
-            "return": kw_return,
-            "if": kw_if,
-            "or": kw_or,
-            "try": kw_try,
-            "catch": kw_catch,
-            "assert": kw_assert,
-            "exit": kw_exit
-        }
-        tmp_tokens, source_string = switch.get(tmp_elem)(source_string)
-        token_list += tmp_tokens
+        tmp_elem, source_string, line_number, character_count, ecc = pop_next_element(source_string, line_number, character_count)
+        
+        if tmp_elem == "comment":
+            source_string, line_number, character_count = skip_comment(source_string, line_number, character_count)
+        elif tmp_elem == "" or tmp_elem == " " or tmp_elem == "\n":
+            pass
+        else:
+            switch = {
+                "retrieve": kw_retrieve,
+                "declare": kw_declare,
+                "set": kw_set,
+                "close-curly-brace": kw_close_block,
+                "call": kw_call,
+                "while": kw_while,
+                "break": kw_break,
+                "jump": kw_jump,
+                "for": kw_for,
+                "return": kw_return,
+                "if": kw_if,
+                "or": kw_or,
+                "try": kw_try,
+                "catch": kw_catch,
+                "assert": kw_assert,
+                "exit": kw_exit
+            }
+            
+            tmp_tokens, source_string, line_number, character_count, ecc = switch.get(tmp_elem)(source_string, line_number, character_count, ecc)
+            token_list += tmp_tokens
     return token_list
 
 def print_tokens(token_list):
@@ -1153,7 +1078,4 @@ def format_token_output(token_list):
     return output_str
 
 def lex(source_string):
-    source_string = remove_comments(source_string)
-    source_string = remove_excess_whitespace(source_string)
-    token_list = create_token_list(source_string)
-    return token_list
+    return create_token_list(source_string)

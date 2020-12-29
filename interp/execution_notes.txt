@@ -1,11 +1,5 @@
 Env:
 
-As of right now, everything is global scope
-
-
-save an id from the body your currently in, use that to determine what to remove from scope after the execution
-
-
 ***
 body env
 pass copy of body env into other bodies (function calls, loops, etc)
@@ -36,3 +30,85 @@ self.env = {
     },
     "cur_ret_id": "sum"
 }
+
+
+
+three steps, lexing, parsing, and executing
+
+lexing: turn source string into list of tokens to build AST with
+parsing: turn tokens in AST
+executing: run the AST
+
+
+how do i handle error handling?
+how do i handle environment and scoping?
+
+for error handling, I want to tell people what line number their error is on, so  I guess i need to store line numbers for each step, lexing, parsing, and executing
+
+maybe tack something onto the tuple for the tokens that is location information as well as for the expressions
+
+with the following source:
+
+```
+comment hello there comment
+declare changeable construct named result of type integer with value five semicolon
+
+call functional construct named print and pass in result semicolon
+```
+
+there are three lines, the declare, and empty, and the call. Should produce the following tokens:
+('kw', 'declare')
+('kw', 'changeable')
+('id', 'result')
+('type', 'integer')
+('val', 5)
+('kw', 'semicolon')
+('kw', 'call')
+('kw', 'functional')
+('id', 'print')
+('kw', 'pass')
+('id', 'result')
+('kw', 'semicolon')
+
+Could add position information as such:
+('kw', 'declare', '3,1')
+('kw', 'changeable', '3,9')
+('id', 'result', '3,36')
+('type', 'integer', '3,51')
+('val', 5, '3,70')
+('kw', 'semicolon', '4,75')
+('kw', 'call', '5,1')
+('kw', 'functional', '5,6')
+('id', 'print', '5,33')
+('kw', 'pass', '5,43')
+('id', 'result', '5,51')
+('kw', 'semicolon', '6,58')
+
+where the third item in the tuple is the position information, first number being the line number and the second being the character number in the line of the token
+
+these numbers would allow me to give precise debugging information for each step of the process
+
+syntax (maybe just lexing) errors for lexing errors, parse errors for parsing, and execution errors for executing
+
+
+comments must be on their own lines, not in the middle of other expressions
+
+only one line expressions?
+
+
+pop_next_value(s, ln, cc) -> val, s, ln, cc
+
+
+get_string_value
+get_list_value
+get_dict_value
+
+
+
+Example Error Message:
+
+syntax error (3,36): Unknown Element 'changable', expected 'changeable', 'functional', 'structure'.
+
+
+how it is called:
+lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'changeable', 'nonchangeable', 'functional', or 'structure'")

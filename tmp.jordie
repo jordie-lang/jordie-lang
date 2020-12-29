@@ -1,0 +1,11 @@
+comment hello there comment
+
+declare changeable construct named result    of type float with value five semicolon
+
+comment
+
+hello there
+
+comment
+
+call functional construct named print and pass in result semicolon
