@@ -1,2 +1,2 @@
 Tokens:
-('kw', 'exit')
+('kw', 'exit', '1,1')

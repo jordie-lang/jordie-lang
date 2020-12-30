@@ -1,15 +1,14 @@
+import argparse
 import interp
-import sys
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="jordie-lang")
+    parser.add_argument(dest="fn", help="jordie-lang file to execute")
+    parser.add_argument("-v", action="store_true", help="show tokens, AST, and resulting env")
+    args = parser.parse_args()
 
-if len(sys.argv) < 1:
-    print("Need to provide filename")
+    # Get text from source file
+    with open(args.fn, "r") as f:
+        source_string = f.read()
 
-fn = sys.argv[1]
-
-# Get text from source file
-f = open(fn, "r")
-source_string = f.read()
-f.close()
-
-interp.run(source_string)
+    interp.run(source_string, verbose=args.v)

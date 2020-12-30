@@ -1,10 +1,13 @@
 BodyExp:
   SetExp: id=message_one field_id=
-    ValExp:
-      val=Hello World!
+    value:
+      ValExp:
+        val=Hello World!
   SetExp: id=counter field_id=
-    ValExp:
-      id=number_one
+    value:
+      ValExp:
+        id=number_one
   SetExp: id=my_address field_id=city
-    ValExp:
-      val=Hoboken
+    value:
+      ValExp:
+        val=Hoboken

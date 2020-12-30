@@ -3,6 +3,9 @@ BodyExp:
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: id=item
+          Arg: argument-1
+            value:
+              ValExp:
+                id=item
       BreakExp
       JumpExp

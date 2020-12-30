@@ -51,7 +51,7 @@ def test_parser():
                     tokens = interp.lexer.lex(test_case_source)
                     ast = interp.parser.parse(tokens)
 
-                    test_string = ast.get_tree_str().rstrip().replace("\r", "")
+                    test_string = ast.get_tree().rstrip().replace("\r", "")
 
                     solution_string = sf.read().rstrip().replace("\r", "")
 
@@ -110,6 +110,6 @@ def test_execution():
 
 
 if __name__ == "__main__":
-    test_lexer()
-    #test_parser()
+    #test_lexer()
+    test_parser()
     #test_execution()

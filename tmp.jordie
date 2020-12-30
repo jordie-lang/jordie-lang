@@ -1,11 +1,15 @@
-comment hello there comment
+declare changeable construct named result of type integer with value five semicolon
 
-declare changeable construct named result    of type float with value five semicolon
+comment the above was a float giving me an execution error, need to make that error reporting system better comment
 
-comment
+call functional construct named print and pass in result semicolon
 
-hello there
+declare functional construct named add_numbers which returns type integer and receives type integer and type integer open-curly-brace
+    declare changeable construct named sum of type integer semicolon
+    set construct named sum with value argument-1 plus argument-2 semicolon
+    return value sum semicolon
+close-curly-brace
 
-comment
+call functional construct named add_numbers and pass in result and eight and return value to construct named result semicolon
 
 call functional construct named print and pass in result semicolon

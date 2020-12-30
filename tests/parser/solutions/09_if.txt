@@ -1,40 +1,47 @@
 BodyExp:
   IfExp:
-    CondExp:
-      OrExp:
-        EqualExp:
-          ValExp:
-            id=number_six
-          ValExp:
-            val=6
-        LessExp:
-          ValExp:
-            id=number_six
-          ValExp:
-            val=6
+    OrExp:
+      EqualExp:
+        ValExp:
+          id=number_six
+        ValExp:
+          val=6
+      LessExp:
+        ValExp:
+          id=number_six
+        ValExp:
+          val=6
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: val=if was true
+          Arg: argument-1
+            value:
+              ValExp:
+                val=if was true
   Else If:
-    CondExp:
-      OrExp:
-        EqualExp:
-          ValExp:
-            id=number_six
-          ValExp:
-            val=6
-        LessExp:
-          ValExp:
-            id=number_six
-          ValExp:
-            val=6
+    OrExp:
+      EqualExp:
+        ValExp:
+          id=number_six
+        ValExp:
+          val=6
+      LessExp:
+        ValExp:
+          id=number_six
+        ValExp:
+          val=6
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: val=if was true
+          Arg: argument-1
+            value:
+              ValExp:
+                val=if was true
   Else:
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: val=else case
+          Arg: argument-1
+            value:
+              ValExp:
+                val=else case

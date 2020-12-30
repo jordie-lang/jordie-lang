@@ -1,9 +1,6 @@
 """
 jordie-lang parser
 
-AST:
-
-
 """
 
 from .jordie_std import *
@@ -21,8 +18,9 @@ op_prec_list = [
     ["divides", "times"]
 ]
 
-def parse_error(error_msg):
-    print(error_msg)
+def parse_error(pos, error_msg):
+    ln, ecc = pos.split(",")
+    print(f"parse error ({ln},{ecc}): {error_msg}.")
     exit(0)
 
 def execute_error(error_msg):
@@ -47,7 +45,7 @@ def deepcopy(foo):
                 dct[k] = foo[k]
         return dct
     else:
-        parse_error("")
+        parse_error("-1,-1", f"unexpected type {type(foo)}, expected 'list' or 'dict'")
 
 def parse_operator_tokens(op, token_list, index):
     if op == "times":
@@ -71,10 +69,9 @@ def parse_operator_tokens(op, token_list, index):
     elif op == "or":
         return OrExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
     else:
-        parse_error("")
+        parse_error("-1,-1", f"unexpected operator {op}")
 
 def parse_value_tokens(token_list):
-    print(token_list)
     # check if value contains an operator
     for ops in op_prec_list:
         for op in ops:
@@ -87,96 +84,12 @@ def parse_value_tokens(token_list):
     
     # if there are no operators, its either an id or a value
     if len(token_list) > 1:
-        parse_error("")
+        parse_error("-1,-1", f"no valid operator, expecting value or identifier")
     
     if token_list[0][0] == "id" or token_list[0][0] == "val":
         return ValExp(token_list[0])
     else:
-        parse_error("")
-
-def get_next_val_exp(tok_list): # OLD
-    #if there is an operator
-    op_prec_list.reverse()
-    for ops in op_prec_list:
-        ops.reverse()
-        for op in ops:
-            #op = operator
-            cnt = 0
-            for token in tok_list:
-                if token[0] == "op" and token[1] == op:
-                    exp_val = make_op_exp(op, tok_list, cnt)
-                    exp_val.build_tree()
-                    return exp_val
-                cnt += 1
-    
-    #if there are no operators, its either id or val
-    if len(tok_list) > 1:
-        parse_error("eeeeeeeeeeeeee")
-    
-    if tok_list[0][0] == "id":
-        exp_val = ValExp([tok_list[0]])
-        exp_val.build_tree()
-        return exp_val
-    elif tok_list[0][0] == "val":
-        exp_val = ValExp([tok_list[0]])
-        exp_val.build_tree()
-        return exp_val
-    else:
-        parse_error("eeeeeeeeeeeeee")
-    return exp_val
-
-def get_next_cond_exp(tok_list):
-    #if there is an operator
-    if op_prec_list[0][0] != "or":
-        op_prec_list.reverse()
-    for ops in op_prec_list:
-        for op in ops:
-            cnt = 0
-            for token in tok_list:
-                if token[0] == "op" and token[1] == op:
-                    exp_val = make_op_exp(op, tok_list, cnt)
-                    exp_val.build_tree()
-                    return exp_val
-                cnt += 1
-    
-    #if there are no operators, its either id or val
-    if len(tok_list) > 1:
-        parse_error("eeeeeeeeeeeeee")
-    
-    if tok_list[0][0] == "id":
-        exp_val = ValExp([tok_list[0]])
-        exp_val.build_tree()
-        return exp_val
-    elif tok_list[0][0] == "val":
-        exp_val = ValExp([tok_list[0]])
-        exp_val.build_tree()
-        return exp_val
-    else:
-        parse_error("eeeeeeeeeeeeee")
-
-def make_op_exp(op, tokens, index): # OLD
-    if op == "times":
-        return MultExp(tokens[:index], tokens[index+1:])
-    elif op == "divides":
-        return DivExp(tokens[:index], tokens[index+1:])
-    elif op == "plus":
-        return AddExp(tokens[:index], tokens[index+1:])
-    elif op == "minus":
-        return SubExp(tokens[:index], tokens[index+1:])
-    elif op == "is equal to":
-        return EqualExp(tokens[:index], tokens[index+1:])
-    elif op == "is greater than":
-        return GreaterExp(tokens[:index], tokens[index+1:])
-    elif op == "is less than":
-        return LessExp(tokens[:index], tokens[index+1:])
-    elif op == "not":
-        return NotExp(tokens[index+1:])
-    elif op == "and":
-        return AndExp(tokens[:index], tokens[index+1:])
-    elif op == "or":
-        return OrExp(tokens[:index], tokens[index+1:])
-    else:
-        parse_error("Error: make_op_exp")
+        parse_error("-1,-1", f"unexpected value token {token_list[0][:2]}, expected an 'id' or 'val'")
 
 def check_jordie_types(foo, f_type):
     if f_type == "integer":
@@ -219,9 +132,6 @@ def get_jordie_type(foo):
     elif type(foo) == dict:
         return "dictionary"
     else:
-        print("aaa")
-        print(foo)
-        print("bbb")
         execute_error("unknown type")
 
 class Exp():
@@ -253,35 +163,18 @@ class ValExp(Exp):
         return exp_str
     
     def execute(self, env):
-        #print("e1")
         if self.is_id:
-            #print("value is an id")
             if not self.data in env["vars"].keys():
                 print("problem with key in env")
-                #execute_error("")
                 return ("ERROR", env)
-            #print("e44444")
-            #print(env)
-            #print("e4.5")
-            #print("------------------------")
-            #print(self.data)
-            #print(env["vars"])
-            #print("------------------------")
             return (env["vars"][self.data]["value"], env)
         else:
-            #print("e5")
             return (self.data, env)
 
 class MultExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
         exp_str = ""
@@ -312,12 +205,6 @@ class DivExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
         exp_str = ""
@@ -348,12 +235,6 @@ class AddExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
         exp_str = ""
@@ -384,12 +265,6 @@ class SubExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
         exp_str = ""
@@ -420,12 +295,6 @@ class EqualExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
         exp_str = ""
@@ -447,16 +316,8 @@ class GreaterExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
-        #print(self.left_exp)
-        #print(self.right_exp)
         exp_str = ""
         exp_str += "{}GreaterExp:\n".format("  "*level)
         exp_str += self.left_exp.print_exp(level+1)
@@ -476,12 +337,6 @@ class LessExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
         exp_str = ""
@@ -491,25 +346,17 @@ class LessExp(Exp):
         return exp_str
     
     def execute(self, env):
-        print(self.left_exp)
-        print(self.right_exp)
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
-        print(l_val)
-        print(r_val)
         return (l_val<r_val, env)
 
 class NotExp(Exp):
     def __init__(self, _right):
         self.right_exp = _right
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
         exp_str = ""
@@ -527,12 +374,6 @@ class AndExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
 
     def print_exp(self, level):
         exp_str = ""
@@ -554,14 +395,6 @@ class OrExp(Exp):
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
-        #self.left_tokens = _left
-        #self.right_tokens = _right
-
-    """
-    def build_tree(self): # OLD
-        self.left_exp = get_next_cond_exp(self.left_tokens)
-        self.right_exp = get_next_cond_exp(self.right_tokens)
-    """
 
     def print_exp(self, level):
         exp_str = ""
@@ -578,24 +411,6 @@ class OrExp(Exp):
         if r_val == "ERROR":
             return ("ERROR", env)
         return (l_val or r_val, env)
-
-class CondExp(Exp): # OLD
-    def __init__(self, _cond):
-        self.c_tokens = _cond
-        self.c_exp = None
-    
-    def build_cond_tree(self):
-        self.c_exp = get_next_cond_exp(self.c_tokens)
-
-    def print_exp(self, level):
-        exp_str = ""
-        exp_str += "{}CondExp:\n".format("  "*level)
-        exp_str += self.c_exp.print_exp(level+1)
-        return exp_str
-
-    def execute(self):
-        exit(0)
-        return "RUN COND EXP"
 
 class BodyExp(Exp):
     def __init__(self):
@@ -615,14 +430,9 @@ class BodyExp(Exp):
         return self.exp_list
     
     def execute(self, env):
-        #print("BodyExp")
-        #print(self.exp_list)
         for exp in self.exp_list:
-            #print(exp)
             tmp = exp.execute(env)
-            #print(tmp)
             val, env = tmp
-            #val, env = exp.execute(env)
             if val == "EXIT":
                 break
             elif val == "ERROR":
@@ -692,12 +502,7 @@ class DeclareExp(Exp):
         return exp_str
     
     def execute(self, env):
-        #print("###")
-        #pprint(env)
-        #print(self.e_val)
         val, env = self.e_val.execute(env)
-        #print(val)
-        #print("$$$")
         if val == "ERROR":
             print("ERROR in DeclareExp")
             return ("ERROR", env)
@@ -706,22 +511,15 @@ class DeclareExp(Exp):
                 env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": env["vars"][val[1]]["value"]}
             else:
                 env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": val}
-            #print("its not ya boi")
         else:
-            #print("its ya boi")
             if env["types"][self.e_type]:
                 # its a struct
                 struct_fields = { k:{"type": v, "value": None} for (k,v) in env["types"][self.e_type].items()}
-                #print("cc")
-                #print(struct_fields)
-                #print("dd")
-
+                
                 env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": struct_fields}
             else:
                 env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": None}
-        #print("is it here?")
-        #pprint(env)
-        #print("well, was it?")
+        
         return (None, env)
 
 class SetExp(Exp):
@@ -758,9 +556,6 @@ class SetExp(Exp):
                 #execute_error("invalid type 1")
                 return ("ERROR", env)
             else:
-                #print("aa")
-                #print(env)
-                #print("bb")
                 env["vars"][self.e_id]["value"][self.e_field_id]["value"] = val
         else:
             #set regular var
@@ -866,8 +661,6 @@ class CallExp(Exp):
         if env["funcs"][self.f_id]["body"] != None:
             # run user function and return val
             for exp in env["funcs"][self.f_id]["body"].get_exp_list():
-                print(exp)
-                print(exp.print_exp(1))
                 tmp_val, env = exp.execute(env)
                 if tmp_val == "EXIT":
                     return ("EXIT", env)
@@ -1003,7 +796,6 @@ class RetExp(Exp): # DID I DO THIS?
         return exp_str
     
     def execute(self, env):
-        #print("RETRETRETRETRETRET")
         tmp_val, env = self.r_val.execute(env)
         if tmp_val == "ERROR":
             return ("ERROR", env)
@@ -1034,13 +826,11 @@ class IfExp(Exp):
         return exp_str
     
     def execute(self, env):
-        #print("IfExp")
         num_conds = len(self.e_conds)
 
         for i in range(num_conds):
             cond = self.e_conds[i]
             body = self.e_bodys[i]
-            print(cond.print_exp(0))
             cond_val, env = cond.execute(env)
             if cond_val == "ERROR":
                 return ("ERROR", env)
@@ -1090,7 +880,7 @@ class TryExp(Exp):
             return (None, env)
         return (None, env)
 
-class AssertExp(Exp): # OLD
+class AssertExp(Exp):
     def __init__(self, _cond):
         self.e_cond = _cond
     
@@ -1120,27 +910,25 @@ def pop_token(token_list):
     return (token_list[0], token_list[1:])
 
 def parse_retrieve_exp(token_list):
-    print("Retrieve")
+    #print("Retrieve")
     e_id = ""
     token, token_list = pop_token(token_list)
     if token[0] == "id":
         e_id = token[1]
     token, token_list = pop_token(token_list)
-    if token == ("kw", "semicolon"):
+    if token[:2] == ("kw", "semicolon"):
         return (RetrieveExp(e_id), token_list)
     else:
-        parse_error("eeeretrieve")
+        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
 
 def parse_declare_exp(token_list):
-    print("Declare")
-    #pprint(token_list)
-    #pprint(token_list[:token_list.index(("kw", "close-curly-brace"))+1])
+    #print("Declare")
     t_id = ""
     t_const = False
     t_type = ""
     t_val = None
     token, token_list = pop_token(token_list)
-    if token == ("kw", "functional"):
+    if token[:2] == ("kw", "functional"):
         #declare function
         f_id = ""
         f_type = ""
@@ -1151,177 +939,165 @@ def parse_declare_exp(token_list):
         if token[0] == "id":
             f_id = token[1]
         else:
-            parse_error("")
+            parse_error(token[2], f"unexpected token {token}, expected an 'id'")
         
         token, token_list = pop_token(token_list)
-        if token == ("kw", "returns"):
+        if token[:2] == ("kw", "returns"):
             token, token_list = pop_token(token_list)
             if token[0] == "type":
                 f_type = token[1]
             else:
-                parse_error("")
+                parse_error(token[2], f"unexpected token {token}, expected ('kw', 'returns')")
         else:
-            parse_error("")
-
+            parse_error(token[2], f"unexpected token {token}, expected ('kw', 'returns')")
+        
         token, token_list = pop_token(token_list)
-        if token == ("kw", "receives"):
+        if token[:2] == ("kw", "receives"):
             token, token_list = pop_token(token_list)
-            if token == ("type", "nothing"):
+            if token[:2] == ("type", "nothing"):
                 f_args = {}
                 token, token_list = pop_token(token_list)
-                if not token == ("kw", "open-curly-brace"):
-                    parse_error("")
+                if not token[:2] == ("kw", "open-curly-brace"):
+                    parse_error(token[2], f"unexpected token {token}, expected ('kw', 'open-curly-brace')")
             else:
                 cnt = 1 # argument-1, change to be argument-one later
-                while(not token == ("kw", "open-curly-brace")):
+                while(not token[:2] == ("kw", "open-curly-brace")):
                     if token[0] == "type":
                         f_args["argument-{}".format(str(cnt))] = token[1]
-                    elif token == ("kw", "and"):
+                    elif token[:2] == ("kw", "and"):
                         #nop
-                        nop = "YEET"
+                        _nop = "YEET"
                     else:
-                        parse_error("")
+                        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'open-curly-brace') or ('kw', 'and')")
                     token, token_list = pop_token(token_list)
                     cnt += 1
         else:
-            parse_error("")
+            parse_error(token[2], f"unexpected token {token}, expected ('kw', 'receives')")
         
         f_body = BodyExp()
-        print("YABBAABABABA")
-        #pprint(token_list)
-        print("----------------------------")
-        while(not token == ("kw", "close-curly-brace")):
-            print("tires")
+        while(not token[:2] == ("kw", "close-curly-brace")):
             tmp_exp, token_list = parse_next_exp(token_list)
-            print(", rubber")
             f_body.append(tmp_exp)
-            print(tmp_exp)
-            print(token_list[0])
-            print("##################")
-            if token_list[0] == ("kw", "close-curly-brace"):
+            if token_list[0][:2] == ("kw", "close-curly-brace"):
                 break
-        print("123456789")
+        
         token, token_list = pop_token(token_list)
-        print("FORTRAN")
         return (FuncExp(f_id, f_type, f_args, f_body), token_list)
-    elif token == ("kw", "changeable"):
+    elif token[:2] == ("kw", "changeable"):
         t_const = False
-    elif token == ("kw", "nonchangeable"):
+    elif token[:2] == ("kw", "nonchangeable"):
         t_const = True
-    elif token == ("kw", "structure"):
+    elif token[:2] == ("kw", "structure"):
         t_id = ""
         t_fields = {}
         token, token_list = pop_token(token_list)
         if token[0] == "id":
             t_id = token[1]
         else:
-            parse_error("eee0.5")
+            parse_error(token[2], f"unexpected token {token}, expected an 'id'")
         token, token_list = pop_token(token_list)
-        if token == ("kw", "open-curly-brace"):
-            while(not token == ("kw", "close-curly-brace")):
+        if token[:2] == ("kw", "open-curly-brace"):
+            while(not token[:2] == ("kw", "close-curly-brace")):
                 f_id = ""
                 f_type = ""
                 token, token_list = pop_token(token_list)
-                if token == ("kw", "field"):
+                if token[:2] == ("kw", "field"):
                     token, token_list = pop_token(token_list)
                     if token[0] == "id":
                         f_id = token[1]
                     else:
-                        parse_error("eee3.5")
+                        parse_error(token[2], f"unexpected token {token}, expected an 'id'")
                     token, token_list = pop_token(token_list)
                     if token[0] == "type":
                         f_type = token[1]
                     else:
-                        parse_error("eee4.5")
+                        parse_error(token[2], f"unexpected token {token}, expected a 'type'")
                     token, token_list = pop_token(token_list)
-                    if token == ("kw", "semicolon"):
+                    if token[:2] == ("kw", "semicolon"):
                         t_fields[f_id] = f_type
                     else:
-                        parse_error("eee5.5")
-                elif token == ("kw", "close-curly-brace"):
+                        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
+                elif token[:2] == ("kw", "close-curly-brace"):
                     break
                 else:
-                    parse_error("eee2.5")
+                    parse_error(token[2], f"unexpected token {token}, expected ('kw', 'field') or ('kw', 'close-curly-brace')")
             return (StructExp(t_id, t_fields), token_list)
         else:
-            parse_error("eee1.5")
+            parse_error(token[2], f"unexpected token {token}, expected ('kw', 'open-curly-brace')")
     else:
-        parse_error("Declare: Unknown construct type.")
+        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'functional') or ('kw', 'changeable') or ('kw', 'nonchangeable') or ('kw', 'structure')")
     token, token_list = pop_token(token_list)
     if token[0] == "id":
         t_id = token[1]
     else:
-        parse_error("Declare: Construct ID not found.")
+        parse_error(token[2], f"unexpected token {token}, expected an 'id'")
     token, token_list = pop_token(token_list)
     if token[0] == "type":
         t_type = token[1]
     else:
-        parse_error("Declare: Construct type not found.")
+        parse_error(token[2], f"unexpected token {token}, expected an 'type'")
+    
     token, token_list = pop_token(token_list)
-    if token == ("kw", "semicolon"):
+    if token[:2] == ("kw", "semicolon"):
         t_val = ValExp(("val", None))
         return (DeclareExp(t_id, t_const, t_type, t_val), token_list)
     else:
         tmp_tokens = []
-        while token != ("kw", "semicolon"):
+        while token[:2] != ("kw", "semicolon"):
             tmp_tokens.append(token)
             token, token_list = pop_token(token_list)
         t_val = parse_value_tokens(tmp_tokens)
-        #t_val = get_next_val_exp(tmp_tokens)
         return (DeclareExp(t_id, t_const, t_type, t_val), token_list)
 
 def parse_set_exp(token_list):
-    print("Set")
+    #print("Set")
     t_id = ""
     t_val = None
     t_field_id = ""
     token, token_list = pop_token(token_list)
-    if token == ("kw", "field"):
+    if token[:2] == ("kw", "field"):
         token, token_list = pop_token(token_list)
         if token[0] == "id":
             t_field_id = token[1]
             token, token_list = pop_token(token_list)
         else:
-            parse_error("eee9")
-    if token[0] == "id":
+            parse_error(token[2], f"unexpected token {token}, expected an 'id'")
+    elif token[0] == "id":
         t_id = token[1]
     else:
-        parse_error("eee5")
+        parse_error(token[2], f"unexpected token {token}, expected a 'field' or 'id'")
 
     token, token_list = pop_token(token_list)
     tmp_tokens = []
-    while(not token == ("kw", "semicolon")):
+    while(not token[:2] == ("kw", "semicolon")):
         tmp_tokens.append(token)
         token, token_list = pop_token(token_list)
-    #t_val = ValExp(val_tokens)
+    
     t_val = parse_value_tokens(tmp_tokens)
-    #t_val.build_tree()
     return (SetExp(t_id, t_val, t_field_id), token_list)
 
 def parse_call_exp(token_list):
-    print("Call")
-    #print("da boi")
+    #print("Call")
     func_id = None
     args = {}
     ret_id = None
     
     token, token_list = pop_token(token_list)
-    if token == ("kw", "functional"):
+    if token[:2] == ("kw", "functional"):
         token, token_list = pop_token(token_list)
         if token[0] == "id":
             func_id = token[1]
         else:
-            parse_error("")
+            parse_error(token[2], f"unexpected token {token}, expected an 'id'")
 
         token, token_list = pop_token(token_list)
-        if token == ("kw", "semicolon"):
+        if token[:2] == ("kw", "semicolon"):
             return (CallExp(func_id, args, ret_id), token_list)
-        elif token == ("kw", "pass"):
+        elif token[:2] == ("kw", "pass"):
             token, token_list = pop_token(token_list)
             cnt = 1 # another spot to update arg names
-            while(not (token == ("kw", "return") or token == ("kw", "semicolon"))):
-                #print("ya boi again")
-                if token == ("kw", "and"):
+            while(not (token[:2] == ("kw", "return") or token[:2] == ("kw", "semicolon"))):
+                if token[:2] == ("kw", "and"):
                     # this is where i would make a change to allow expressions inside call params
                     # nop
                     token, token_list = pop_token(token_list)
@@ -1331,53 +1107,57 @@ def parse_call_exp(token_list):
                     args["argument-{}".format(str(cnt))] = tmp_val
                     token, token_list = pop_token(token_list)
                     cnt += 1
-            if token == ("kw", "return"):
+            if token[:2] == ("kw", "return"):
                 token, token_list = pop_token(token_list)
                 if token[0] == "id":
                     ret_id = token[1]
                 else:
-                    parse_error("")
+                    parse_error(token[2], f"unexpected token {token}, expected an 'id'")
                 token, token_list = pop_token(token_list)
-                if token == ("kw", "semicolon"):
+                if token[:2] == ("kw", "semicolon"):
                     return (CallExp(func_id, args, ret_id), token_list)
-            elif token == ("kw", "semicolon"):
+                else:
+                    parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
+            elif token[:2] == ("kw", "semicolon"):
                 return (CallExp(func_id, args, ret_id), token_list)
             else:
-                parse_error("")
-        elif token == ("kw", "return"):
+                parse_error(token[2], f"unexpected token {token}, expected ('kw', 'return') or ('kw', 'semicolon')")
+        elif token[:2] == ("kw", "return"):
             token, token_list = pop_token(token_list)
             if token[0] == "id":
                 ret_id = token[1]
             else:
-                parse_error("")
+                parse_error(token[2], f"unexpected token {token}, expected an 'id'")
             token, token_list = pop_token(token_list)
-            if token == ("kw", "semicolon"):
+            if token[:2] == ("kw", "semicolon"):
                 return (CallExp(func_id, args, ret_id), token_list)
+            else:
+                parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
         else:
-            parse_error("")
+            parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon') or ('kw', 'pass') or ('kw', 'return')")
     else:
-        parse_error("calleeeeeeeeee")
+        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'functional')")
 
     return (CallExp(func_id, args, ret_id), token_list)
 
 def parse_break_exp(token_list):
-    print("Break")
+    #print("Break")
     token, token_list = pop_token(token_list)
-    if token == ("kw", "semicolon"):
+    if token[:2] == ("kw", "semicolon"):
         return (BreakExp(), token_list)
     else:
-        parse_error("breakeeeeee")
+        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
 
 def parse_jump_exp(token_list):
-    print("Jump")
+    #print("Jump")
     token, token_list = pop_token(token_list)
-    if token == ("kw", "semicolon"):
+    if token[:2] == ("kw", "semicolon"):
         return (JumpExp(), token_list)
     else:
-        parse_error("breakeeeeee")
+        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
 
 def parse_for_exp(token_list):
-    print("For")
+    #print("For")
     items = None
     body_exp = None
 
@@ -1385,63 +1165,57 @@ def parse_for_exp(token_list):
     if token[0] == "id":
         items = token[1]
     else:
-        parse_error("foreeeeeeee")
+        parse_error(token[2], f"unexpected token {token}, expected an 'id'")
     
     body_exp = BodyExp()
     token, token_list = pop_token(token_list)
-    while(not token == ("kw", "close-curly-brace")):
+    while(not token[:2] == ("kw", "close-curly-brace")):
         tmp_exp, token_list = parse_next_exp(token_list)
         body_exp.append(tmp_exp)
 
-        if token_list[0] == ("kw", "close-curly-brace"):
+        if token_list[0][:2] == ("kw", "close-curly-brace"):
             break
 
     token, token_list = pop_token(token_list)
     return (ForExp(items, body_exp), token_list)
 
 def parse_while_exp(token_list):
-    print("While")
+    #print("While")
     cond_exp = None
     body_exp = None
 
     cond_tokens = []
     token, token_list = pop_token(token_list)
-    while token != ("kw", "open-curly-brace"):
+    while token[:2] != ("kw", "open-curly-brace"):
         cond_tokens.append(token)
         token, token_list = pop_token(token_list)
     cond_exp = parse_value_tokens(cond_tokens)
 
     body_exp = BodyExp()
-    while(not token == ("kw", "close-curly-brace")):
+    while(not token[:2] == ("kw", "close-curly-brace")):
         tmp_exp, token_list = parse_next_exp(token_list)
         body_exp.append(tmp_exp)
 
-        if token_list[0] == ("kw", "close-curly-brace"):
+        if token_list[0][:2] == ("kw", "close-curly-brace"):
             break
 
     token, token_list = pop_token(token_list)
     return (WhileExp(cond_exp, body_exp), token_list)
 
 def parse_return_exp(token_list):
-    print("Return")
+    #print("Return")
     val_tokens = []
     token, token_list = pop_token(token_list)
-    print("before return while")
-    while(not token == ("kw", "semicolon")):
+    while(not token[:2] == ("kw", "semicolon")):
         val_tokens.append(token)
         token, token_list = pop_token(token_list)
-    print("a long time ago")
-    print(val_tokens)
-    print("princess")
+    
     r_val = parse_value_tokens(val_tokens)
-    print("fell to sword")
-    print(r_val)
-    print("before eyes")
+    
     return (RetExp(r_val), token_list)
 
 def parse_if_exp(token_list):
-    print("IF")
-    #print(token_list[:token_list.index(("kw", "close-curly-brace"))+1])
+    #print("IF")
     conds = []
     bodys = []
     else_case = False
@@ -1450,160 +1224,155 @@ def parse_if_exp(token_list):
     body_exp = None
     cond_tokens = []
     token, token_list = pop_token(token_list)
-    while token != ("kw", "open-curly-brace"):
+    while token[:2] != ("kw", "open-curly-brace"):
         cond_tokens.append(token)
         token, token_list = pop_token(token_list)
     cond_exp = parse_value_tokens(cond_tokens)
 
     body_exp = BodyExp()
-    print("before if while")
-    while(not token == ("kw", "close-curly-brace")):
-        print("metal")
+    while(not token[:2] == ("kw", "close-curly-brace")):
         tmp_exp, token_list = parse_next_exp(token_list)
-        print(tmp_exp)
-        print(token_list[0])
-        print("spoon")
         body_exp.append(tmp_exp)
 
-        if token_list[0] == ("kw", "close-curly-brace"):
+        if token_list[0][:2] == ("kw", "close-curly-brace"):
             break
-    print("out of if while")
+    
     token, token_list = pop_token(token_list)
 
     conds.append(cond_exp)
     bodys.append(body_exp)
     
-    while(token_list[0] == ("kw", "or")):
-        print("$$$$$$$$$$$$$$$$$$$$$$ or clause")
+    while(token_list[0][:2] == ("kw", "or")):
         token, token_list = pop_token(token_list)
-        if not token == ("kw", "or"):
-            parse_error("")
+        if not token[:2] == ("kw", "or"):
+            parse_error(token[2], f"unexpected token {token}, expected ('kw', 'or')")
         token, token_list = pop_token(token_list)
-        if token == ("kw", "if"):
+        if token[:2] == ("kw", "if"):
             cond_tokens = []
             token, token_list = pop_token(token_list)
-            while token != ("kw", "open-curly-brace"):
+            while token[:2] != ("kw", "open-curly-brace"):
                 cond_tokens.append(token)
                 token, token_list = pop_token(token_list)
             cond_exp = parse_value_tokens(cond_tokens)
 
             body_exp = BodyExp()
-            print("before or while")
-            while(not token == ("kw", "close-curly-brace")):
-                print("wood")
+            while(not token[:2] == ("kw", "close-curly-brace")):
                 tmp_exp, token_list = parse_next_exp(token_list)
-                print(tmp_exp)
-                print(token_list[0])
-                print("boat")
+                
                 body_exp.append(tmp_exp)
 
-                if token_list[0] == ("kw", "close-curly-brace"):
+                if token_list[0][:2] == ("kw", "close-curly-brace"):
                     break
             token, token_list = pop_token(token_list)
             conds.append(cond_exp)
             bodys.append(body_exp)
-        elif token == ("kw", "open-curly-brace"):
+        elif token[:2] == ("kw", "open-curly-brace"):
             else_case = True
             body_exp = BodyExp()
-            print("before else loop")
-            while(not token == ("kw", "close-curly-brace")):
-                print("glass")
+            while(not token[:2] == ("kw", "close-curly-brace")):
                 tmp_exp, token_list = parse_next_exp(token_list)
-                print(tmp_exp)
-                print(token_list[0])
-                pprint(token_list)
-                print("window")
                 body_exp.append(tmp_exp)
 
-                if token_list[0] == ("kw", "close-curly-brace"):
+                if token_list[0][:2] == ("kw", "close-curly-brace"):
                     break
             token, token_list = pop_token(token_list)
             bodys.append(body_exp)
         else:
-            parse_error("")
-        print("&&&&&&&&&")
-        print(token_list)
+            parse_error(token[2], f"unexpected token {token}, expected ('kw', 'if') or ('kw', 'open-curly-brace')")
         if token_list == []:
             break
     return (IfExp(conds, bodys, else_case), token_list)
 
 def parse_try_exp(token_list):
-    print("Try")
+    #print("Try")
     body_exp = None
     error_id = None
     error_body = None
 
     token, token_list = pop_token(token_list)
-    if not token == ("kw", "open-curly-brace"):
-        parse_error("")
+    if not token[:2] == ("kw", "open-curly-brace"):
+        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'open-curly-brace')")
 
     body_exp = BodyExp()
-    while(not token == ("kw", "close-curly-brace")):
+    while(not token[:2] == ("kw", "close-curly-brace")):
         tmp_exp, token_list = parse_next_exp(token_list)
         body_exp.append(tmp_exp)
 
-        if token_list[0] == ("kw", "close-curly-brace"):
+        if token_list[0][:2] == ("kw", "close-curly-brace"):
             break
     token, token_list = pop_token(token_list)
     
     token, token_list = pop_token(token_list)
-    if token == ("kw", "catch"):
+    if token[:2] == ("kw", "catch"):
         token, token_list = pop_token(token_list)
         if token[0] == "id":
             error_id = token[1]
         else:
-            parse_error("")
+            parse_error(token[2], f"unexpected token {token}, expected an 'id'")
     else:
-        parse_error("")
+        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'catch')")
     
     token, token_list = pop_token(token_list)
-    if not token == ("kw", "open-curly-brace"):
-        parse_error("")
+    if not token[:2] == ("kw", "open-curly-brace"):
+        parse_error(token[2], f"unexpected token {token}, expected ('kw', 'open-curly-brace')")
 
     error_body = BodyExp()
-    while(not token == ("kw", "close-curly-brace")):
+    while(not token[:2] == ("kw", "close-curly-brace")):
         tmp_exp, token_list = parse_next_exp(token_list)
         error_body.append(tmp_exp)
 
-        if token_list[0] == ("kw", "close-curly-brace"):
+        if token_list[0][:2] == ("kw", "close-curly-brace"):
             break
     token, token_list = pop_token(token_list)
     return (TryExp(body_exp, error_id, error_body), token_list)
 
+def parse_assert_exp(token_list):
+    #print("Assert")
+    cond_tokens = []
+
+    token, token_list = pop_token(token_list)
+    while token[:2] != ("kw", "semicolon"):
+        cond_tokens.append(token)
+        token, token_list = pop_token(token_list)
+    cond_exp = parse_value_tokens(cond_tokens)
+    
+    return (AssertExp(cond_exp), token_list)
+
 def parse_exit_exp(token_list):
-    print("Exit")
+    #print("Exit")
     return (ExitExp(), token_list)
 
 def parse_next_exp(token_list):
     token, token_list = pop_token(token_list)
     tmp_exp = None
-    if token == ("kw", "retrieve"):
+    if token[:2] == ("kw", "retrieve"):
         tmp_exp, token_list = parse_retrieve_exp(token_list)
-    elif token == ("kw", "declare"):
+    elif token[:2] == ("kw", "declare"):
         tmp_exp, token_list = parse_declare_exp(token_list)
-    elif token == ("kw", "set"):
+    elif token[:2] == ("kw", "set"):
         tmp_exp, token_list = parse_set_exp(token_list)
-    elif token == ("kw", "while"):
+    elif token[:2] == ("kw", "while"):
         tmp_exp, token_list = parse_while_exp(token_list)
-    elif token == ("kw", "call"):
+    elif token[:2] == ("kw", "call"):
         tmp_exp, token_list = parse_call_exp(token_list)
-    elif token == ("kw", "break"):
+    elif token[:2] == ("kw", "break"):
         tmp_exp, token_list = parse_break_exp(token_list)
-    elif token == ("kw", "jump"):
+    elif token[:2] == ("kw", "jump"):
         tmp_exp, token_list = parse_jump_exp(token_list)
-    elif token == ("kw", "for"):
+    elif token[:2] == ("kw", "for"):
         tmp_exp, token_list = parse_for_exp(token_list)
-    elif token == ("kw", "return"):
+    elif token[:2] == ("kw", "return"):
         tmp_exp, token_list = parse_return_exp(token_list)
-    elif token == ("kw", "if"):
+    elif token[:2] == ("kw", "if"):
         tmp_exp, token_list = parse_if_exp(token_list)
-    elif token == ("kw", "try"):
+    elif token[:2] == ("kw", "try"):
         tmp_exp, token_list = parse_try_exp(token_list)
-    elif token == ("kw", "exit"):
+    elif token[:2] == ("kw", "assert"):
+        tmp_exp, token_list = parse_assert_exp(token_list)
+    elif token[:2] == ("kw", "exit"):
         tmp_exp, token_list = parse_exit_exp(token_list)
     else:
-        print(token)
-        parse_error("Unknown Exp: YEETO 2")
+        parse_error(token[2], f"unexpected token {token}, expected a keyword ['retrieve', 'declare', 'set', 'while', 'call', 'break', 'jump', 'for', 'return', 'if', 'try', 'assert', 'exit']")
     return (tmp_exp, token_list)
 
 class AST:
@@ -1613,41 +1382,36 @@ class AST:
 
     def parse_tokens(self, token_list):
         while(token_list):
-            print("lslslslslsls")
-            print(token_list[:4])
             token, token_list = pop_token(token_list)
-            print(token)
-            print(token_list[:4])
-            print("slslslsslsls")
             tmp_exp = None
-            if token == ("kw", "retrieve"):
+            if token[:2] == ("kw", "retrieve"):
                 tmp_exp, token_list = parse_retrieve_exp(token_list)
-            elif token == ("kw", "declare"):
-                print("IN HERE @@@@@@@@@@@")
+            elif token[:2] == ("kw", "declare"):
                 tmp_exp, token_list = parse_declare_exp(token_list)
-                print("JFJFJFJFJFJFJF")
-            elif token == ("kw", "set"):
+            elif token[:2] == ("kw", "set"):
                 tmp_exp, token_list = parse_set_exp(token_list)
-            elif token == ("kw", "while"):
+            elif token[:2] == ("kw", "while"):
                 tmp_exp, token_list = parse_while_exp(token_list)
-            elif token == ("kw", "call"):
+            elif token[:2] == ("kw", "call"):
                 tmp_exp, token_list = parse_call_exp(token_list)
-            elif token == ("kw", "break"):
+            elif token[:2] == ("kw", "break"):
                 tmp_exp, token_list = parse_break_exp(token_list)
-            elif token == ("kw", "jump"):
+            elif token[:2] == ("kw", "jump"):
                 tmp_exp, token_list = parse_jump_exp(token_list)
-            elif token == ("kw", "for"):
+            elif token[:2] == ("kw", "for"):
                 tmp_exp, token_list = parse_for_exp(token_list)
-            elif token == ("kw", "return"):
+            elif token[:2] == ("kw", "return"):
                 tmp_exp, token_list = parse_return_exp(token_list)
-            elif token == ("kw", "if"):
+            elif token[:2] == ("kw", "if"):
                 tmp_exp, token_list = parse_if_exp(token_list)
-            elif token == ("kw", "try"):
+            elif token[:2] == ("kw", "try"):
                 tmp_exp, token_list = parse_try_exp(token_list)
-            elif token == ("kw", "exit"):
+            elif token[:2] == ("kw", "assert"):
+                tmp_exp, token_list = parse_assert_exp(token_list)
+            elif token[:2] == ("kw", "exit"):
                 tmp_exp, token_list = parse_exit_exp(token_list)
             else:
-                parse_error("Unknown Exp: YEETO 1")
+                parse_error(token[2], f"unexpected token {token}, expected a keyword ['retrieve', 'declare', 'set', 'while', 'call', 'break', 'jump', 'for', 'return', 'if', 'try', 'assert', 'exit']")
             self.head.append(tmp_exp)
 
     def print_tree(self):
@@ -1679,26 +1443,13 @@ class AST:
         return self.env
 
     def execute(self):
-        print("ITS YA BOI")
         self.create_env()
-        #print("aaa")
-        self.print_tree()
-        print("### BEGIN SCRIPT STANDARD OUT ###")
         _ret_val, self.env = self.head.execute(self.env)
-        print("#### END SCRIPT STANDARD OUT ####")
         if _ret_val == "ERROR":
             execute_error("An Error Has Occured running AST.")
-        
-        pprint(self.env)
+        return self.env
     
-
 def parse(token_list):
     ast = AST()
-    print(ast)
     ast.parse_tokens(token_list)
-    print("tokens parsed")
-    #print(ast)
-    #print("bbbb")
     return ast
-
-#parse = lambda token_list: AST().parse_tokens(token_list)
