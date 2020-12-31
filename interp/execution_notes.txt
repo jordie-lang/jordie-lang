@@ -112,3 +112,17 @@ syntax error (3,36): Unknown Element 'changable', expected 'changeable', 'functi
 
 how it is called:
 lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'changeable', 'nonchangeable', 'functional', or 'structure'")
+
+
+
+import logging
+log = logging.getLogger("my-logger")
+log.info("Hello, world")
+
+comment
+declare changeable construct named result of type integer semicolon
+call functional construct named fib and pass in nine and return value to construct named result semicolon
+call functional construct named print and pass in result semicolon
+comment
+
+

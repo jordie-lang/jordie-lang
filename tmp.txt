@@ -1,0 +1,1265 @@
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+4
+ENV:
+ENV:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+3
+ENV:
+3
+ENV:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+3
+ENV 1037:
+3
+CALL:
+fib
+ARG:
+1
+ENV:
+1
+ENV:
+1
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+3
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+fib
+ARG:
+2
+ENV:
+2
+ENV:
+2
+ENV 1037:
+4
+ENV 1037:
+4
+ENV 1037:
+4
+CALL:
+print
+ARG:
+2

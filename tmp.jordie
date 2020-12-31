@@ -1,8 +1,10 @@
+declare functional construct named print_five which returns nothing and receives nothing open-curly-brace
+    call functional construct named print and pass in five semicolon
+close-curly-brace
+
+call functional construct named print_five semicolon
+
 declare changeable construct named result of type integer with value five semicolon
-
-comment the above was a float giving me an execution error, need to make that error reporting system better comment
-
-call functional construct named print and pass in result semicolon
 
 declare functional construct named add_numbers which returns type integer and receives type integer and type integer open-curly-brace
     declare changeable construct named sum of type integer semicolon
@@ -13,3 +15,11 @@ close-curly-brace
 call functional construct named add_numbers and pass in result and eight and return value to construct named result semicolon
 
 call functional construct named print and pass in result semicolon
+
+declare changeable construct named counter of type integer with value five semicolon
+
+while counter is greater than zero or counter is equal to zero run the following open-curly-brace
+    call functional construct named print and pass in counter semicolon
+    set construct named counter with value counter minus one semicolon
+    declare changeable construct named tester of type integer semicolon
+close-curly-brace

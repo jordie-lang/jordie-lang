@@ -6,6 +6,9 @@ jordie-lang parser
 from .jordie_std import *
 from . import lexer
 from pprint import pprint
+from copy import deepcopy
+
+import json
 
 # operators
 # operator precedence from lowest to highest
@@ -27,8 +30,8 @@ def execute_error(error_msg):
     print("Execution Error: {}".format(error_msg))
     exit(0)
 
-def deepcopy(foo):
-    if type(foo) == "list":
+def deepcopy_2(foo):
+    if type(foo) == list:
         lst = []
         for i in foo:
             if type(i) == "list" or type(i) == "dict":
@@ -36,7 +39,7 @@ def deepcopy(foo):
             else:
                 lst.append(i)
         return lst
-    elif type(foo) == "dict":
+    elif type(foo) == dict:
         dct = {}
         for k in foo.keys():
             if type(foo[k]) == "list" or type(foo[k]) == "dict":
@@ -117,10 +120,17 @@ def check_jordie_types(foo, f_type):
             return True
         else:
             return False
+    elif f_type == "boolean":
+        if type(foo) == bool:
+            return True
+        else:
+            return False
     else:
-        execute_error("unknown type")
+        execute_error("unknown type 1")
 
 def get_jordie_type(foo):
+    #print("BAD")
+    #print(foo)
     if type(foo) == int:
         return "integer"
     elif type(foo) == float:
@@ -131,8 +141,10 @@ def get_jordie_type(foo):
         return "list"
     elif type(foo) == dict:
         return "dictionary"
+    elif type(foo) == bool:
+        return "boolean"
     else:
-        execute_error("unknown type")
+        execute_error("unknown type 2")
 
 class Exp():
     def __init__(self):
@@ -145,7 +157,7 @@ class Exp():
         exit(0)
         return "RUN EXP"
 
-class ValExp(Exp):
+class ValExp(Exp): # DON
     def __init__(self, _data_token):
         if _data_token[0] == "id":
             self.is_id = True
@@ -163,15 +175,19 @@ class ValExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # check if expression is a value or a reference
         if self.is_id:
+            # ensure variable exists in environment
             if not self.data in env["vars"].keys():
-                print("problem with key in env")
                 return ("ERROR", env)
+            
+            # return value of variable
             return (env["vars"][self.data]["value"], env)
         else:
+            # return value of ValExp
             return (self.data, env)
 
-class MultExp(Exp):
+class MultExp(Exp): # DON
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -184,24 +200,32 @@ class MultExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure left value is either integer or float
+        print("yaba 1")
         l_type = get_jordie_type(l_val)
         if l_type != "integer" and l_type != "float":
-            #execute_error("")
             return ("ERROR", env)
 
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+
+        # ensure right value is either integer or float
+        #print("yaba 2")
         r_type = get_jordie_type(r_val)
         if r_type != "integer" and r_type != "float":
-            #execute_error("")
             return ("ERROR", env)
+        
+        # return multiplication of left and right values
         return (l_val*r_val, env)
 
-class DivExp(Exp):
+class DivExp(Exp): # DON
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -214,24 +238,32 @@ class DivExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure left value is either integer or float
+        #print("yaba 3")
         l_type = get_jordie_type(l_val)
         if l_type != "integer" and l_type != "float":
-            #execute_error("")
             return ("ERROR", env)
 
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure right value is either integer or float
+        #print("yaba 4")
         r_type = get_jordie_type(r_val)
         if r_type != "integer" and r_type != "float":
-            #execute_error("")
             return ("ERROR", env)
+        
+        # return division of left and right values
         return (l_val/r_val, env)
 
-class AddExp(Exp):
+class AddExp(Exp): # DON
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -244,24 +276,32 @@ class AddExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure left value is either integer or float
+        #print("yaba 5")
         l_type = get_jordie_type(l_val)
         if l_type != "integer" and l_type != "float":
-            #execute_error("")
             return ("ERROR", env)
 
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure right value is either integer or float
+        #print("yaba 6")
         r_type = get_jordie_type(r_val)
         if r_type != "integer" and r_type != "float":
-            #execute_error("")
             return ("ERROR", env)
+        
+        # return addition of left and right values
         return (l_val+r_val, env)
 
-class SubExp(Exp):
+class SubExp(Exp): #DON
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -274,24 +314,32 @@ class SubExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure left value is either integer or float
+        #print("yaba 7")
         l_type = get_jordie_type(l_val)
         if l_type != "integer" and l_type != "float":
-            #execute_error("")
             return ("ERROR", env)
 
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure right value is either integer or float
+        #print("yaba 8")
         r_type = get_jordie_type(r_val)
         if r_type != "integer" and r_type != "float":
-            #execute_error("")
             return ("ERROR", env)
+        
+        # return subtraction of left and right values
         return (l_val-r_val, env)
 
-class EqualExp(Exp):
+class EqualExp(Exp): # DON (will need to add code to check equivalience of custom data types)
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -304,15 +352,28 @@ class EqualExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+        
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure the left and right values are the same type
+        #print("yaba 9")
+        l_type = get_jordie_type(l_val)
+        #print("yaba 10")
+        r_type = get_jordie_type(r_val)
+        if l_type != r_type:
+            return ("ERROR", env)
+        
+        # return equivalence comparison of left and right values
         return (l_val==r_val, env)
 
-class GreaterExp(Exp):
+class GreaterExp(Exp): # DON
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -325,15 +386,28 @@ class GreaterExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure the left and right values are the same type
+        #print("yaba 11")
+        l_type = get_jordie_type(l_val)
+        #print("yaba 12")
+        r_type = get_jordie_type(r_val)
+        if l_type != r_type:
+            return ("ERROR", env)
+        
+        # return greater comparison of left and right values
         return (l_val>r_val, env)
 
-class LessExp(Exp):
+class LessExp(Exp): # DON
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -346,15 +420,28 @@ class LessExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+        
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure the left and right values are the same type
+        #print("yaba 13")
+        l_type = get_jordie_type(l_val)
+        #print("yaba 14")
+        r_type = get_jordie_type(r_val)
+        if l_type != r_type:
+            return ("ERROR", env)
+        
+        # return less comparison of left and right values
         return (l_val<r_val, env)
 
-class NotExp(Exp):
+class NotExp(Exp): # DON
     def __init__(self, _right):
         self.right_exp = _right
 
@@ -365,12 +452,21 @@ class NotExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure right value is a boolean
+        #print("yaba 15")
+        r_type = get_jordie_type(r_val)
+        if r_type != "boolean":
+            return ("ERROR", env)
+
+        # return boolean not of right value
         return (not r_val, env)
 
-class AndExp(Exp):
+class AndExp(Exp): # DON
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -383,15 +479,28 @@ class AndExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+        
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure left and right values are booleans
+        #print("yaba 16")
+        l_type = get_jordie_type(l_val)
+        #print("yaba 17")
+        r_type = get_jordie_type(r_val)
+        if r_type != "boolean" or l_type != "boolean":
+            return ("ERROR", env)
+
+        # return boolean and of left and right values
         return (l_val and r_val, env)
 
-class OrExp(Exp):
+class OrExp(Exp): # DON
     def __init__(self, _left, _right):
         self.left_exp = _left
         self.right_exp = _right
@@ -404,15 +513,28 @@ class OrExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from left expression
         l_val, env = self.left_exp.execute(env)
         if l_val == "ERROR":
             return ("ERROR", env)
+        
+        # get value from right expression
         r_val, env = self.right_exp.execute(env)
         if r_val == "ERROR":
             return ("ERROR", env)
+        
+        # ensure left and right values are booleans
+        #print("yaba 18")
+        l_type = get_jordie_type(l_val)
+        #print("yaba 19")
+        r_type = get_jordie_type(r_val)
+        if r_type != "boolean" or l_type != "boolean":
+            return ("ERROR", env)
+        
+        # return boolean or of right value
         return (l_val or r_val, env)
 
-class BodyExp(Exp):
+class BodyExp(Exp): # DON
     def __init__(self):
         self.exp_list = []
 
@@ -430,16 +552,23 @@ class BodyExp(Exp):
         return self.exp_list
     
     def execute(self, env):
+        # run each expression in the body expression
         for exp in self.exp_list:
-            tmp = exp.execute(env)
-            val, env = tmp
+            # don't update environment from sub body expressions
+            if isinstance(exp, BodyExp):
+                val, _body_env = exp.execute(env)
+            else:
+                val, env = exp.execute(env)
+            
+            # check for an error or a break statement to stop loop execution
             if val == "EXIT":
                 break
             elif val == "ERROR":
                 return ("ERROR", env)
+
         return (None, env)
 
-class StructExp(Exp):
+class StructExp(Exp): # DON
     def __init__(self, _id, _e_fields):
         self.e_id = _id
         self.e_fields = _e_fields
@@ -453,12 +582,16 @@ class StructExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # create struct as new custom type or overwrite previous definition
         env["types"][self.e_id] = {}
+
+        # add each field to the custom type
         for field in self.e_fields.keys():
             env["types"][self.e_id][field] = self.e_fields[field]
+        
         return (None, env)
 
-class RetrieveExp(Exp):
+class RetrieveExp(Exp): # DON
     def __init__(self, _id):
         self.e_id = _id
     
@@ -482,9 +615,10 @@ class RetrieveExp(Exp):
         ret_val, env = body.execute(env)
         if ret_val == "ERROR":
             return ("ERROR", env)
+        
         return (None, env)
 
-class DeclareExp(Exp):
+class DeclareExp(Exp): # DON (not sure what the else for the if val != None is doing)
     def __init__(self, _id, _const, _type, _value=None):
         self.e_id = _id
         self.e_const = _const
@@ -502,14 +636,18 @@ class DeclareExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # get value from value expression
         val, env = self.e_val.execute(env)
         if val == "ERROR":
-            print("ERROR in DeclareExp")
             return ("ERROR", env)
+        
+        # save value to env
         if val != None:
             if type(val) is tuple:
+                # create variable from a reference
                 env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": env["vars"][val[1]]["value"]}
             else:
+                # create variable from a value
                 env["vars"][self.e_id] = {"type": self.e_type, "const": self.e_const, "value": val}
         else:
             if env["types"][self.e_type]:
@@ -522,7 +660,7 @@ class DeclareExp(Exp):
         
         return (None, env)
 
-class SetExp(Exp):
+class SetExp(Exp): # DON
     def __init__(self, _id, _val, _field_id):
         self.e_id = _id
         self.e_val = _val
@@ -536,38 +674,36 @@ class SetExp(Exp):
         return exp_str
     
     def execute(self, env):
-        # ensure target id is in env
+        # ensure target id is in the environment
         if not self.e_id in env["vars"].keys():
-            #execute_error("unknown construct: {}".format(self.e_id))
             return ("ERROR", env)
 
-        # evaluate val exp
-        #val, env = self.e_val.execute(env)  TOO MANY VALUES TO UNPACK, WUT?
-        val = self.e_val.execute(env)
+        # get value from the value expression
+        val, env = self.e_val.execute(env)
         if val == "ERROR":
             return ("ERROR", env)
-        env = val[1]
-        val = val[0]
+        
+        # check if target variable is a struct
         if self.e_field_id:
-            #set field of struct
-            #f_type = env["vars"][self.e_id]["value"][self.e_field_id]["type"]
+            # check that value is the correct type for the struct field
             f_type = env["types"][env["vars"][self.e_id]["type"]][self.e_field_id]
             if not check_jordie_types(val, f_type):
-                #execute_error("invalid type 1")
                 return ("ERROR", env)
-            else:
-                env["vars"][self.e_id]["value"][self.e_field_id]["value"] = val
+            
+            # store value in the struct field
+            env["vars"][self.e_id]["value"][self.e_field_id]["value"] = val
         else:
-            #set regular var
+            # check that value is the correct type for the variable
             v_type = env["vars"][self.e_id]["type"]
             if not check_jordie_types(val, v_type):
-                #execute_error("invalid type 2")
                 return ("ERROR", env)
-            else:
-                env["vars"][self.e_id]["value"] = val
+            
+            # store value in the variable
+            env["vars"][self.e_id]["value"] = val
+        
         return (None, env)
 
-class WhileExp(Exp):
+class WhileExp(Exp): # DON (why is tester still in the resulting env?)
     def __init__(self, _cond, _body):
         self.e_cond = _cond
         self.e_body = _body
@@ -580,29 +716,45 @@ class WhileExp(Exp):
         return exp_str
 
     def execute(self, env):
+        # save copy of the environment
+        envc = deepcopy(env)
+
+        # get value from conditional expression
         cond_val, env = self.e_cond.execute(env)
         if cond_val == "ERROR":
-            return ("ERROR", env)
+            return ("ERROR", envc)
+        
+        # run the body while the condition evaluates to true
         while cond_val:
+            # get all expressions from the body
             for exp in self.e_body.get_exp_list():
+                # run the expression
                 tmp_val, env = exp.execute(env)
+
+                # check for break, jump, exit, or error cases
                 if tmp_val == "BREAK":
-                    return (None, env)
+                    return (None, envc)
                 elif tmp_val == "JUMP":
                     break
                 elif tmp_val == "EXIT":
-                    return ("EXIT", env)
+                    return ("EXIT", envc)
                 elif tmp_val == "ERROR":
-                    return ("ERROR", env)
+                    return ("ERROR", envc)
+                elif tmp_val == "RETURN":
+                    ret_val = env
+                    return ("RETURN", ret_val)
+            
+            # reevaluate the conditional expression
             cond_val, env = self.e_cond.execute(env)
             if cond_val == "ERROR":
-                return ("ERROR", env)
-        return (None, env)
+                return ("ERROR", envc)
+        
+        return (None, envc)
 
 class CallExp(Exp):
     def __init__(self, _f_id, _args, _ret_id):
         self.f_id = _f_id
-        self.f_args = _args #list of ValExps
+        self.f_args = _args #list of ValExps (dict of ValExps?)
         self.f_ret = _ret_id
     
     def print_exp(self, level):
@@ -618,89 +770,131 @@ class CallExp(Exp):
             exp_str += "{}None\n".format("  "*(level+2))
         return exp_str
     
-    def execute(self, env):
-        args_to_remove = []
+    def execute(self, env): # (update argument-1 to be argument-one)
+        #print("THE STUFF I WANT TO KNOW")
+        #print(self.f_id)
+        #print(self.f_args)
+        #print(self.f_args["argument-1"].execute(env)[0])
+        #print(self.f_ret)
+        #pprint(env)
+        #print("END OF STUFF")
+        #args_to_remove = []
+        #with open("tmp.txt", "a") as f:
+            #f.write("CALL:\n")
+            #f.write(self.f_id + "\n")
+            #if "argument-1" in self.f_args.keys():
+                #f.write("ARG:\n")
+                #f.write(str(self.f_args["argument-1"].execute(env)[0]) + "\n")
+        
         func_args_values = []
 
-        # check function exists
+        # save copy of the environment
+        envc = deepcopy(env)
+
+        # ensure function exists
         if not self.f_id in env["funcs"].keys():
-            #execute_error("invalid function name")
-            print("Call Error 1")
-            return ("ERROR", env)
+            return ("ERROR", envc)
         
-        # check args are correct types and add to env
-        for arg in env["funcs"][self.f_id]["args"].keys():
-            # arg = "argument-1"
-            tmp_arg = self.f_args[arg]
-            arg_val, env = tmp_arg.execute(env)
+        # check args are correct types and add then to the environment
+        for arg in env["funcs"][self.f_id]["args"].keys():# arg = "argument-1"
+            # get argument value expression from input args
+            arg_exp = self.f_args[arg]
+
+            # get value from the value expression
+            arg_val, env = arg_exp.execute(env)
             if arg_val == "ERROR":
-                print("CALL ERROR 2")
-                return ("ERROR", env)
+                return ("ERROR", envc)
+            
+            # ensure argument is the correct type
+            #print("BEFORE")
+            #print("yaba 20")
             arg_type = get_jordie_type(arg_val)
+            #print("AFTER")
             check_type = env["funcs"][self.f_id]["args"][arg]
-
             if arg_type != check_type and check_type != "any":
-                #execute_error("invalid arg type")
-                print("CALL ERROR 3")
-                return ("ERROR", env)
+                return ("ERROR", envc)
 
-            # add args to env, args are constants
+            # add args to the environment (args are constants)
             env["vars"][arg] = {"type": arg_type, "const": True, "value": arg_val}
-            args_to_remove.append(arg)
+            #args_to_remove.append(arg)
 
             # add value to arg list for builtin functions
             func_args_values.append(arg_val)
         
-        # check ret_id is in env
+        #print("ABC123")
+        #pprint(envc)
+        #print("DEF456")
+        #env["vars"]["bruh"] = "why you do this?"
+        #pprint(envc)
+        #print("GHI789")
+
+        # ensure variable to store return value is in the environment
         if self.f_ret:
             if not self.f_ret in env["vars"].keys():
-                print("CALL ERROR 4")
-                return ("ERROR", env)
+                return ("ERROR", envc)
 
-        # check if function is in std lib or user defined
+        # check if function is in the standard library or user defined
         if env["funcs"][self.f_id]["body"] != None:
-            # run user function and return val
+            # run user defined function and return value
+            # get all expressions from the body
             for exp in env["funcs"][self.f_id]["body"].get_exp_list():
+                #with open("tmp.txt", "a") as f:
+                    #f.write("ENV:\n")
+                    #try:
+                        #f.write(str(env["vars"]["n"]["value"]) + "\n")
+                    #except:
+                        #print("dooh")
+                
+                # run the expression
+                #print("7777777")
+                #print(exp)
                 tmp_val, env = exp.execute(env)
-                if tmp_val == "EXIT":
-                    return ("EXIT", env)
-                elif tmp_val == "ERROR":
-                    print("CALL ERROR 5")
-                    return ("ERROR", env)
-                elif tmp_val == "RETURN":
-                    if not env["vars"]["jordie_return_value"]:
-                        print("CALL ERROR 6")
-                        return ("ERROR", env)
-                    ret_type = get_jordie_type(env["vars"]["jordie_return_value"])
-                    if ret_type != env["vars"][self.f_ret]["type"]:
-                        print("CALL ERROR 7")
-                        return ("ERROR", env)
-                    
-                    env["vars"][self.f_ret]["value"] = env["vars"]["jordie_return_value"]
 
-                    # remove return value from env
-                    env["vars"]["jordie_return_value"] = None
-                    return (None, env)
+                # check for exit, error, or return cases
+                if tmp_val == "EXIT":
+                    return ("EXIT", envc)
+                elif tmp_val == "ERROR":
+                    return ("ERROR", envc)
+                elif tmp_val == "RETURN":
+                    if self.f_ret:
+                        # return value replaces environment
+                        ret_val = env
+
+                        # ensure return value is the correct type
+                        #print("BEFORE2")
+                        #print("yaba 21")
+                        ret_type = get_jordie_type(ret_val)
+                        #print("AFTER2")
+                        if ret_type != envc["vars"][self.f_ret]["type"]:
+                            return ("ERROR", envc)
+                        
+                        # update variable that stores return value
+                        envc["vars"][self.f_ret]["value"] = ret_val
+            #print("ABC")
+            #pprint(envc)
+            #print("DEF")
+            #print(self.f_ret)
+            #print(tmp_val)
+            #print("HERE I AM AGAIN")
+            return (None, envc)
         else:
+            # run standard library function
+            ret_val = env["funcs"][self.f_id]["fnc"](*func_args_values)
+            
+            # check if the function should return a value
             if self.f_ret:
-                # run std lib function and return val
-                ret_val = env["funcs"][self.f_id]["fnc"](func_args_values)
+                # ensure return value is the correct type
+                #print("yaba 22")
                 ret_type = get_jordie_type(ret_val)
                 if ret_type != env["vars"][self.f_ret]["type"]:
-                    print("CALL ERROR 8")
-                    return ("ERROR", env)
-                env["vars"][self.f_ret]["value"] = ret_val
-            else:
-                # run std lib function
-                ret_val = env["funcs"][self.f_id]["fnc"](*func_args_values)
+                    return ("ERROR", envc)
 
-        # remove args from env
-        for arg in args_to_remove:
-            env["vars"].pop(arg)
+                # update variable that stores return value
+                envc["vars"][self.f_ret]["value"] = ret_val
         
-        return (None, env)
+            return (None, envc)
 
-class BreakExp(Exp):
+class BreakExp(Exp): # DON
     def __init__(self):
         self.tmp_var = "TMP"
     
@@ -712,7 +906,7 @@ class BreakExp(Exp):
     def execute(self, env):
         return ("BREAK", env)
 
-class JumpExp(Exp):
+class JumpExp(Exp): # DON
     def __init__(self):
         self.tmp_var = "TMP"
     
@@ -724,7 +918,7 @@ class JumpExp(Exp):
     def execute(self, env):
         return ("JUMP", env)
 
-class ForExp(Exp):
+class ForExp(Exp): # DON
     def __init__(self, _id, _body):
         self.iter_id = _id
         self.e_body = _body
@@ -736,33 +930,44 @@ class ForExp(Exp):
         return exp_str
     
     def execute(self, env):
-        # check that iterable is a list
-        id_type = env["vars"][self.iter_id]["type"]
-        if id_type != "list":
-            #execute_error("")
-            return ("ERROR", env)
+        # save copy of the environment
+        envc = deepcopy (env)
 
+        # get list value from the environment
+        if not self.iter_id in env["vars"].keys():
+            return ("ERROR", envc)
         iter_list = env["vars"][self.iter_id]["value"]
 
-        # loop over iterable _id
+        # ensure that input is a list
+        id_type = env["vars"][self.iter_id]["type"]
+        if id_type != "list":
+            return ("ERROR", envc)
+
+        # loop over input list
         for item in iter_list:
             # set item variable in environment
+            #print("yaba 23")
             env["vars"]["item"] = {"const": True, "type": get_jordie_type(item), "value": item}
             
-            # run BodyExp
+            # run body expression
             tmp_val, env = self.e_body.execute(env)
+
+            # check for break, jump, exit, or error cases
             if tmp_val == "BREAK":
-                return (None, env)
+                return (None, envc)
             elif tmp_val == "JUMP":
                 continue
             elif tmp_val == "EXIT":
-                return ("EXIT", env)
+                return ("EXIT", envc)
             elif tmp_val == "ERROR":
-                return ("ERROR", env)
+                return ("ERROR", envc)
+            elif tmp_val == "RETURN":
+                ret_val = env
+                return ("RETURN", ret_val)
 
-        return (None, env)
+        return (None, envc)
 
-class FuncExp(Exp):
+class FuncExp(Exp): # DON
     def __init__(self, _id, _type, _args, _body):
         self.f_id = _id
         self.f_type = _type
@@ -782,10 +987,12 @@ class FuncExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # add function to environment
         env["funcs"][self.f_id] = {"type": self.f_type, "args": self.f_args, "body": self.f_body, "fnc": None}
+        
         return (None, env)
 
-class RetExp(Exp): # DID I DO THIS?
+class RetExp(Exp): # DON
     def __init__(self, _val):
         self.r_val = _val
     
@@ -796,14 +1003,18 @@ class RetExp(Exp): # DID I DO THIS?
         return exp_str
     
     def execute(self, env):
-        tmp_val, env = self.r_val.execute(env)
-        if tmp_val == "ERROR":
+        # get value from the value expression
+        #print("555 BEFORE")
+        #print(self.r_val)
+        val, env = self.r_val.execute(env)
+        #print("555 AFTER")
+        if val == "ERROR":
             return ("ERROR", env)
         
-        env["vars"]["jordie_return_value"] = tmp_val
-        return ("RETURN", env)
+        # return value instead of environment
+        return ("RETURN", val)
 
-class IfExp(Exp):
+class IfExp(Exp): # DON
     def __init__(self, _conds, _bodys, _else):
         self.e_conds = _conds
         self.e_bodys = _bodys
@@ -826,38 +1037,81 @@ class IfExp(Exp):
         return exp_str
     
     def execute(self, env):
+        # save copy of the environment
+        envc = deepcopy(env)
+
+        # get the number of conditionals
         num_conds = len(self.e_conds)
 
+        # execute each condition and block
         for i in range(num_conds):
             cond = self.e_conds[i]
             body = self.e_bodys[i]
+            
+            # get value from the conditional expression
             cond_val, env = cond.execute(env)
             if cond_val == "ERROR":
-                return ("ERROR", env)
+                return ("ERROR", envc)
+            
+            # run the body if the condition evaluates to true
             if cond_val:
+                # get all expressions from the body
                 for exp in body.get_exp_list():
+                    # run the expression
+                    #print("88888888")
+                    #print(exp)
                     tmp_val, env = exp.execute(env)
 
+                    #print("9999999")
+                    #print(tmp_val)
+
+                    # check for break, jump, exit, or error cases
                     if tmp_val == "BREAK":
-                        return ("BREAK", env)
+                        return ("BREAK", envc)
                     elif tmp_val == "JUMP":
-                        return ("JUMP", env)
+                        return ("JUMP", envc)
                     elif tmp_val == "EXIT":
-                        return ("EXIT", env)
+                        return ("EXIT", envc)
                     elif tmp_val == "ERROR":
-                        return ("ERROR", env)
-                return (None, env)
+                        return ("ERROR", envc)
+                    elif tmp_val == "RETURN":
+                        ret_val = env
+                        return ("RETURN", ret_val)
+                    
+                return (None, envc)
         
+        # if none of the conditions are true, check for an else case
         if self.e_else:
             body = self.e_bodys[-1]
+
+            # get all expressions from the body
             for exp in body.get_exp_list():
+                #with open("tmp.txt", "a") as f:
+                    #f.write("ENV 1037:\n")
+                    #try:
+                        #f.write(str(env["vars"]["argument-1"]["value"]) + "\n")
+                    #except:
+                        #print("dooh")
+
+                # run the expression
                 tmp_val, env = exp.execute(env)
-                if tmp_val == "ERROR":
-                    return ("ERROR", env)
+                
+                # check for break, jump, exit, or error cases
+                if tmp_val == "BREAK":
+                    return ("BREAK", envc)
+                elif tmp_val == "JUMP":
+                    return ("JUMP", envc)
+                elif tmp_val == "EXIT":
+                    return ("EXIT", envc)
+                elif tmp_val == "ERROR":
+                    return ("ERROR", envc)
+                elif tmp_val == "RETURN":
+                    ret_val = env
+                    return ("RETURN", ret_val)
 
-        return (None, env)
+        return (None, envc)
 
-class TryExp(Exp):
+class TryExp(Exp): # DON
     def __init__(self, _body, _err_id, _err_body):
         self.e_body = _body
         self.e_err_id = _err_id
@@ -872,15 +1126,21 @@ class TryExp(Exp):
         return exp_str
     
     def execute(self, env):
-        tmp_val, env = self.e_body.execute(env)
-        if tmp_val == "ERROR":
-            error = "An Error Has Occured in TryExp."
-            env["vars"][self.e_err_id] = {"const": True, "type": get_jordie_type(error), "value": error}
-            tmp_val, env = self.e_err_body.execute(env)
-            return (None, env)
-        return (None, env)
+        # save copy of the environment
+        envc = deepcopy(env)
 
-class AssertExp(Exp):
+        # run the expression
+        val, env = self.e_body.execute(env)
+        if val == "ERROR":
+            error_msg = "An Error Has Occured in TryExp."
+            #print("yaba 24")
+            env["vars"][self.e_err_id] = {"const": True, "type": get_jordie_type(error_msg), "value": error_msg}
+            val, env = self.e_err_body.execute(env)
+            return (None, envc)
+
+        return (None, envc)
+
+class AssertExp(Exp): # DON
     def __init__(self, _cond):
         self.e_cond = _cond
     
@@ -890,11 +1150,15 @@ class AssertExp(Exp):
         exp_str += self.e_cond.print_exp(level+1)
         return exp_str
 
-    def execute(self):
-        exit(0)
-        return "RUN ASSERT EXP"
+    def execute(self, env):
+        # get value from conditional expression
+        cond_val, env = self.e_cond.execute(env)
+        if cond_val == "ERROR":
+            return ("ERROR", env)
+        
+        return(None, env)
 
-class ExitExp(Exp):
+class ExitExp(Exp): # DON
     def __init__(self):
         self.tmp_var = "TMP"
     

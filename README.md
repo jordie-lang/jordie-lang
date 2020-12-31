@@ -29,3 +29,7 @@ All language documentation can be found at jordie-lang.org.
 ##### Conditionals (also break and assert)
 
 ##### Errors (also exit)
+
+add, sub, mult, and div work on integers and floats
+
+
