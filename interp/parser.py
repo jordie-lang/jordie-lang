@@ -5,11 +5,10 @@ jordie-lang parser
 
 from .jordie_std import *
 from . import lexer
-from pprint import pprint
 from copy import deepcopy
-
-import json
 from num2words import num2words
+from pprint import pprint
+
 
 # operators
 # operator precedence from lowest to highest
@@ -28,52 +27,36 @@ def parse_error(pos, error_msg):
     exit(0)
 
 def execute_error(error_msg):
-    print("Execution Error: {}".format(error_msg))
+    print(error_msg)
     exit(0)
 
-def deepcopy_2(foo):
-    if type(foo) == list:
-        lst = []
-        for i in foo:
-            if type(i) == "list" or type(i) == "dict":
-                lst.append(deepcopy(i))
-            else:
-                lst.append(i)
-        return lst
-    elif type(foo) == dict:
-        dct = {}
-        for k in foo.keys():
-            if type(foo[k]) == "list" or type(foo[k]) == "dict":
-                dct[k] = deepcopy(foo[k])
-            else:
-                dct[k] = foo[k]
-        return dct
-    else:
-        parse_error("-1,-1", f"unexpected type {type(foo)}, expected 'list' or 'dict'")
+def exec_error(pos, error_msg):
+    ln, ecc = pos.split(",")
+    return f"execution error ({ln},{ecc}): {error_msg}."
 
-def parse_operator_tokens(op, token_list, index):
+def parse_operator_tokens(op, token_list, index, pos):
     if op == "times":
-        return MultExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return MultExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     elif op == "divides":
-        return DivExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return DivExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     elif op == "plus":
-        return AddExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return AddExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     elif op == "minus":
-        return SubExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return SubExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     elif op == "is equal to":
-        return EqualExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return EqualExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     elif op == "is greater than":
-        return GreaterExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return GreaterExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     elif op == "is less than":
-        return LessExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return LessExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     elif op == "not":
-        return NotExp(parse_value_tokens(token_list[index+1:]))
+        return NotExp(parse_value_tokens(token_list[index+1:]), pos)
     elif op == "and":
-        return AndExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return AndExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     elif op == "or":
-        return OrExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]))
+        return OrExp(parse_value_tokens(token_list[:index]), parse_value_tokens(token_list[index+1:]), pos)
     else:
-        parse_error("-1,-1", f"unexpected operator {op}")
+        parse_error(pos, f"unexpected operator {op}")
 
 def parse_value_tokens(token_list):
     # check if value contains an operator
@@ -83,17 +66,17 @@ def parse_value_tokens(token_list):
             cnt = 0
             for token in token_list:
                 if token[0] == "op" and token[1] == op:
-                    return parse_operator_tokens(op, token_list, cnt)
+                    return parse_operator_tokens(op, token_list, cnt, token[2])
                 cnt += 1
     
     # if there are no operators, its either an id or a value
     if len(token_list) > 1:
-        parse_error("-1,-1", f"no valid operator, expecting value or identifier")
+        parse_error(token_list[0][2], f"no valid operator, expecting value or identifier")
     
     if token_list[0][0] == "id" or token_list[0][0] == "val":
-        return ValExp(token_list[0])
+        return ValExp(token_list[0], token_list[0][2])
     else:
-        parse_error("-1,-1", f"unexpected value token {token_list[0][:2]}, expected an 'id' or 'val'")
+        parse_error(token_list[0][2], f"unexpected value token {token_list[0][:2]}, expected an 'id' or 'val'")
 
 def check_jordie_types(foo, f_type):
     if f_type == "integer":
@@ -158,13 +141,17 @@ class Exp():
         exit(0)
         return "RUN EXP"
 
-class ValExp(Exp): # DON
-    def __init__(self, _data_token):
+class ValExp(Exp): # DONE
+    def __init__(self, _data_token, _pos):
         if _data_token[0] == "id":
             self.is_id = True
         else:
             self.is_id = False
         self.data = _data_token[1]
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
     
     def print_exp(self, level):
         exp_str = ""
@@ -180,7 +167,7 @@ class ValExp(Exp): # DON
         if self.is_id:
             # ensure variable exists in environment
             if not self.data in env["vars"].keys():
-                return ("ERROR", env)
+                return ("ERROR", exec_error(self.pos, f"unknown variable {self.data}"))
             
             # return value of variable
             return (env["vars"][self.data]["value"], env)
@@ -188,10 +175,14 @@ class ValExp(Exp): # DON
             # return value of ValExp
             return (self.data, env)
 
-class MultExp(Exp): # DON
-    def __init__(self, _left, _right):
+class MultExp(Exp): # DONE
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -207,10 +198,10 @@ class MultExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure left value is either integer or float
-        print("yaba 1")
         l_type = get_jordie_type(l_val)
         if l_type != "integer" and l_type != "float":
-            return ("ERROR", env)
+            exp_pos = self.left_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid multiplication input type {l_type}, expected integer or float"))
 
         # get value from right expression
         r_val, env = self.right_exp.execute(env)
@@ -218,18 +209,22 @@ class MultExp(Exp): # DON
             return ("ERROR", env)
 
         # ensure right value is either integer or float
-        #print("yaba 2")
         r_type = get_jordie_type(r_val)
         if r_type != "integer" and r_type != "float":
-            return ("ERROR", env)
+            exp_pos = self.right_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid multiplication input type {r_type}, expected integer or float"))
         
         # return multiplication of left and right values
         return (l_val*r_val, env)
 
-class DivExp(Exp): # DON
-    def __init__(self, _left, _right):
+class DivExp(Exp): # DONE
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -245,10 +240,10 @@ class DivExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure left value is either integer or float
-        #print("yaba 3")
         l_type = get_jordie_type(l_val)
         if l_type != "integer" and l_type != "float":
-            return ("ERROR", env)
+            exp_pos = self.left_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid division input type {l_type}, expected integer or float"))
 
         # get value from right expression
         r_val, env = self.right_exp.execute(env)
@@ -256,18 +251,22 @@ class DivExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure right value is either integer or float
-        #print("yaba 4")
         r_type = get_jordie_type(r_val)
         if r_type != "integer" and r_type != "float":
-            return ("ERROR", env)
+            exp_pos = self.right_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid division input type {r_type}, expected integer or float"))
         
         # return division of left and right values
         return (l_val/r_val, env)
 
-class AddExp(Exp): # DON
-    def __init__(self, _left, _right):
+class AddExp(Exp): # DONE
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -283,10 +282,10 @@ class AddExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure left value is either integer or float
-        #print("yaba 5")
         l_type = get_jordie_type(l_val)
         if l_type != "integer" and l_type != "float":
-            return ("ERROR", env)
+            exp_pos = self.left_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid addition input type {l_type}, expected integer or float"))
 
         # get value from right expression
         r_val, env = self.right_exp.execute(env)
@@ -294,18 +293,22 @@ class AddExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure right value is either integer or float
-        #print("yaba 6")
         r_type = get_jordie_type(r_val)
         if r_type != "integer" and r_type != "float":
-            return ("ERROR", env)
+            exp_pos = self.right_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid addition input type {r_type}, expected integer or float"))
         
         # return addition of left and right values
         return (l_val+r_val, env)
 
-class SubExp(Exp): #DON
-    def __init__(self, _left, _right):
+class SubExp(Exp): #DONE
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -321,10 +324,10 @@ class SubExp(Exp): #DON
             return ("ERROR", env)
         
         # ensure left value is either integer or float
-        #print("yaba 7")
         l_type = get_jordie_type(l_val)
         if l_type != "integer" and l_type != "float":
-            return ("ERROR", env)
+            exp_pos = self.left_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid subtraction input type {l_type}, expected integer or float"))
 
         # get value from right expression
         r_val, env = self.right_exp.execute(env)
@@ -332,18 +335,22 @@ class SubExp(Exp): #DON
             return ("ERROR", env)
         
         # ensure right value is either integer or float
-        #print("yaba 8")
         r_type = get_jordie_type(r_val)
         if r_type != "integer" and r_type != "float":
-            return ("ERROR", env)
+            exp_pos = self.right_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid subtraction input type {r_type}, expected integer or float"))
         
         # return subtraction of left and right values
         return (l_val-r_val, env)
 
 class EqualExp(Exp): # DON (will need to add code to check equivalience of custom data types)
-    def __init__(self, _left, _right):
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -364,20 +371,22 @@ class EqualExp(Exp): # DON (will need to add code to check equivalience of custo
             return ("ERROR", env)
         
         # ensure the left and right values are the same type
-        #print("yaba 9")
         l_type = get_jordie_type(l_val)
-        #print("yaba 10")
         r_type = get_jordie_type(r_val)
         if l_type != r_type:
-            return ("ERROR", env)
+            return ("ERROR", exec_error(self.pos, f"types must match for equivalence comparison, got types {l_type} and {r_type}"))
         
         # return equivalence comparison of left and right values
         return (l_val==r_val, env)
 
-class GreaterExp(Exp): # DON
-    def __init__(self, _left, _right):
+class GreaterExp(Exp): # DONE
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -398,20 +407,22 @@ class GreaterExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure the left and right values are the same type
-        #print("yaba 11")
         l_type = get_jordie_type(l_val)
-        #print("yaba 12")
         r_type = get_jordie_type(r_val)
         if l_type != r_type:
-            return ("ERROR", env)
+            return ("ERROR", exec_error(self.pos, f"types must match for greater than comparison, got types {l_type} and {r_type}"))
         
         # return greater comparison of left and right values
         return (l_val>r_val, env)
 
-class LessExp(Exp): # DON
-    def __init__(self, _left, _right):
+class LessExp(Exp): # DONE
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -432,19 +443,21 @@ class LessExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure the left and right values are the same type
-        #print("yaba 13")
         l_type = get_jordie_type(l_val)
-        #print("yaba 14")
         r_type = get_jordie_type(r_val)
         if l_type != r_type:
-            return ("ERROR", env)
+            return ("ERROR", exec_error(self.pos, f"types must match for less than comparison, got types {l_type} and {r_type}"))
         
         # return less comparison of left and right values
         return (l_val<r_val, env)
 
-class NotExp(Exp): # DON
-    def __init__(self, _right):
+class NotExp(Exp): # DONE
+    def __init__(self, _right, _pos):
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -459,18 +472,22 @@ class NotExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure right value is a boolean
-        #print("yaba 15")
         r_type = get_jordie_type(r_val)
         if r_type != "boolean":
-            return ("ERROR", env)
+            exp_pos = self.right_exp.get_pos()
+            return ("ERROR", exec_error(exp_pos, f"invalid not input type {r_type}, expected boolean"))
 
         # return boolean not of right value
         return (not r_val, env)
 
-class AndExp(Exp): # DON
-    def __init__(self, _left, _right):
+class AndExp(Exp): # DONE
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -491,20 +508,22 @@ class AndExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure left and right values are booleans
-        #print("yaba 16")
         l_type = get_jordie_type(l_val)
-        #print("yaba 17")
         r_type = get_jordie_type(r_val)
         if r_type != "boolean" or l_type != "boolean":
-            return ("ERROR", env)
+            return ("ERROR", exec_error(self.pos, f"invalid and input types {r_type} and {l_type}, expected booleans"))
 
         # return boolean and of left and right values
         return (l_val and r_val, env)
 
-class OrExp(Exp): # DON
-    def __init__(self, _left, _right):
+class OrExp(Exp): # DONE
+    def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
+        self.pos = _pos
+    
+    def get_pos(self):
+        return self.pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -525,17 +544,15 @@ class OrExp(Exp): # DON
             return ("ERROR", env)
         
         # ensure left and right values are booleans
-        #print("yaba 18")
         l_type = get_jordie_type(l_val)
-        #print("yaba 19")
         r_type = get_jordie_type(r_val)
         if r_type != "boolean" or l_type != "boolean":
-            return ("ERROR", env)
+            return ("ERROR", exec_error(self.pos, f"invalid or input types {r_type} and {l_type}, expected booleans"))
         
         # return boolean or of right value
         return (l_val or r_val, env)
 
-class BodyExp(Exp): # DON
+class BodyExp(Exp): # DONE
     def __init__(self):
         self.exp_list = []
 
@@ -556,10 +573,11 @@ class BodyExp(Exp): # DON
         # run each expression in the body expression
         for exp in self.exp_list:
             # don't update environment from sub body expressions
-            if isinstance(exp, BodyExp):
-                val, _body_env = exp.execute(env)
-            else:
-                val, env = exp.execute(env)
+            # if isinstance(exp, BodyExp):
+            #     val, _body_env = exp.execute(env)
+            # else:
+            #     val, env = exp.execute(env)
+            val, env = exp.execute(env)
             
             # check for an error or a break statement to stop loop execution
             if val == "EXIT":
@@ -569,7 +587,7 @@ class BodyExp(Exp): # DON
 
         return (None, env)
 
-class StructExp(Exp): # DON
+class StructExp(Exp): # DONE
     def __init__(self, _id, _e_fields):
         self.e_id = _id
         self.e_fields = _e_fields
@@ -592,7 +610,7 @@ class StructExp(Exp): # DON
         
         return (None, env)
 
-class RetrieveExp(Exp): # DON
+class RetrieveExp(Exp): # DONE
     def __init__(self, _id):
         self.e_id = _id
     
@@ -615,11 +633,11 @@ class RetrieveExp(Exp): # DON
         # run source BodyExp
         ret_val, env = body.execute(env)
         if ret_val == "ERROR":
-            return ("ERROR", env)
+            return ("ERROR", f"module {self.e_id}, {env}")
         
         return (None, env)
 
-class DeclareExp(Exp): # DON (not sure what the else for the if val != None is doing)
+class DeclareExp(Exp): # DONE
     def __init__(self, _id, _const, _type, _value=None):
         self.e_id = _id
         self.e_const = _const
@@ -661,11 +679,13 @@ class DeclareExp(Exp): # DON (not sure what the else for the if val != None is d
         
         return (None, env)
 
-class SetExp(Exp): # DON
-    def __init__(self, _id, _val, _field_id):
+class SetExp(Exp): # DONE
+    def __init__(self, _id, _val, _field_id, _id_pos, _field_pos):
         self.e_id = _id
         self.e_val = _val
         self.e_field_id = _field_id
+        self.id_pos = _id_pos
+        self.field_pos = _field_pos
 
     def print_exp(self, level):
         exp_str = ""
@@ -677,7 +697,7 @@ class SetExp(Exp): # DON
     def execute(self, env):
         # ensure target id is in the environment
         if not self.e_id in env["vars"].keys():
-            return ("ERROR", env)
+            return ("ERROR", exec_error(self.id_pos, f"unknown variable {self.e_id}"))
 
         # get value from the value expression
         val, env = self.e_val.execute(env)
@@ -689,7 +709,7 @@ class SetExp(Exp): # DON
             # check that value is the correct type for the struct field
             f_type = env["types"][env["vars"][self.e_id]["type"]][self.e_field_id]
             if not check_jordie_types(val, f_type):
-                return ("ERROR", env)
+                return ("ERROR", exec_error(self.field_pos, f"invalid field type {f_type} for field {self.e_field_id}"))
             
             # store value in the struct field
             env["vars"][self.e_id]["value"][self.e_field_id]["value"] = val
@@ -697,14 +717,14 @@ class SetExp(Exp): # DON
             # check that value is the correct type for the variable
             v_type = env["vars"][self.e_id]["type"]
             if not check_jordie_types(val, v_type):
-                return ("ERROR", env)
+                return ("ERROR", exec_error(self.id_pos, f"invalid type for value {self.e_id}"))
             
             # store value in the variable
             env["vars"][self.e_id]["value"] = val
         
         return (None, env)
 
-class WhileExp(Exp): # DON (why is tester still in the resulting env?)
+class WhileExp(Exp): # DONE
     def __init__(self, _cond, _body):
         self.e_cond = _cond
         self.e_body = _body
@@ -723,7 +743,7 @@ class WhileExp(Exp): # DON (why is tester still in the resulting env?)
         # get value from conditional expression
         cond_val, env = self.e_cond.execute(env)
         if cond_val == "ERROR":
-            return ("ERROR", envc)
+            return ("ERROR", env)
         
         # run the body while the condition evaluates to true
         while cond_val:
@@ -740,7 +760,7 @@ class WhileExp(Exp): # DON (why is tester still in the resulting env?)
                 elif tmp_val == "EXIT":
                     return ("EXIT", envc)
                 elif tmp_val == "ERROR":
-                    return ("ERROR", envc)
+                    return ("ERROR", env)
                 elif tmp_val == "RETURN":
                     ret_val = env
                     return ("RETURN", ret_val)
@@ -748,15 +768,18 @@ class WhileExp(Exp): # DON (why is tester still in the resulting env?)
             # reevaluate the conditional expression
             cond_val, env = self.e_cond.execute(env)
             if cond_val == "ERROR":
-                return ("ERROR", envc)
+                return ("ERROR", env)
         
         return (None, envc)
 
-class CallExp(Exp):
-    def __init__(self, _f_id, _args, _ret_id):
+class CallExp(Exp): # DONE
+    def __init__(self, _f_id, _args, _ret_id, _f_id_pos, _args_pos, _ret_id_pos):
         self.f_id = _f_id
-        self.f_args = _args #list of ValExps (dict of ValExps?)
+        self.f_args = _args
         self.f_ret = _ret_id
+        self.f_id_pos = _f_id_pos
+        self.f_args_pos = _args_pos
+        self.f_ret_pos = _ret_id_pos
     
     def print_exp(self, level):
         exp_str = ""
@@ -779,101 +802,62 @@ class CallExp(Exp):
 
         # ensure function exists
         if not self.f_id in env["funcs"].keys():
-            return ("ERROR", envc)
+            return ("ERROR", exec_error(self.f_id_pos, f"unknown function {self.f_id}"))
         
         # check args are correct types and add then to the environment
-        for arg in env["funcs"][self.f_id]["args"].keys():# arg = "argument-one"
-            #print("BOZO")
-            #print(self.f_id)
-            #print(arg)
-            #pprint(env)
+        for arg in env["funcs"][self.f_id]["args"].keys():
             # get argument value expression from input args
             arg_exp = self.f_args[arg]
-            #print("yo 1")
+            arg_pos = self.f_args_pos[arg]
 
             # get value from the value expression
             arg_val, env = arg_exp.execute(env)
-            #print("yo 2")
             if arg_val == "ERROR":
-                return ("ERROR", envc)
+                return ("ERROR", env)
             
             # ensure argument is the correct type
-            #print("BEFORE")
-            #print("yaba 20")
             arg_type = get_jordie_type(arg_val)
-            #print("AFTER")
             check_type = env["funcs"][self.f_id]["args"][arg]
-            #print("yo 3")
             if arg_type != check_type and check_type != "any":
-                return ("ERROR", envc)
+                return ("ERROR", exec_error(arg_pos, f"invalid argument type for argument {arg}"))
 
             # add args to the environment (args are constants)
             env["vars"][arg] = {"type": arg_type, "const": True, "value": arg_val}
-            #args_to_remove.append(arg)
 
             # add value to arg list for builtin functions
             func_args_values.append(arg_val)
         
-        #print("ABC123")
-        #pprint(envc)
-        #print("DEF456")
-        #env["vars"]["bruh"] = "why you do this?"
-        #pprint(envc)
-        #print("GHI789")
-        #print("yo 4")
         # ensure variable to store return value is in the environment
         if self.f_ret:
             if not self.f_ret in env["vars"].keys():
-                return ("ERROR", envc)
+                return ("ERROR", exec_error(self.f_ret_pos, f"invalid return target {self.f_ret}"))
 
         # check if function is in the standard library or user defined
         if env["funcs"][self.f_id]["body"] != None:
             # run user defined function and return value
             # get all expressions from the body
             for exp in env["funcs"][self.f_id]["body"].get_exp_list():
-                #with open("tmp.txt", "a") as f:
-                    #f.write("ENV:\n")
-                    #try:
-                        #f.write(str(env["vars"]["n"]["value"]) + "\n")
-                    #except:
-                        #print("dooh")
-                
                 # run the expression
-                #print("7777777")
-                #print(exp)
-                #print("yo 5")
-                #print(self.f_id)
-                #print(exp)
-                #pprint(env)
                 tmp_val, env = exp.execute(env)
-                #print(tmp_val)
+
                 # check for exit, error, or return cases
                 if tmp_val == "EXIT":
                     return ("EXIT", envc)
                 elif tmp_val == "ERROR":
-                    return ("ERROR", envc)
+                    return ("ERROR", env)
                 elif tmp_val == "RETURN":
                     if self.f_ret:
                         # return value replaces environment
                         ret_val = env
 
                         # ensure return value is the correct type
-                        #print("BEFORE2")
-                        #print("yaba 21")
                         ret_type = get_jordie_type(ret_val)
-                        #print("AFTER2")
                         if ret_type != envc["vars"][self.f_ret]["type"]:
-                            return ("ERROR", envc)
+                            return ("ERROR", exec_error(self.f_id_pos, f"invalid return type {ret_type}"))
                         
                         # update variable that stores return value
                         envc["vars"][self.f_ret]["value"] = ret_val
-            #print("ABC")
-            #pprint(envc)
-            #print("DEF")
-            #print(self.f_ret)
-            #print(tmp_val)
-            #print("HERE I AM AGAIN")
-            #print("yo 6")
+            
             return (None, envc)
         else:
             # run standard library function
@@ -882,17 +866,16 @@ class CallExp(Exp):
             # check if the function should return a value
             if self.f_ret:
                 # ensure return value is the correct type
-                #print("yaba 22")
                 ret_type = get_jordie_type(ret_val)
                 if ret_type != env["vars"][self.f_ret]["type"]:
-                    return ("ERROR", envc)
+                    return ("ERROR", exec_error(self.f_id_pos, f"invalid return type {ret_type}"))
 
                 # update variable that stores return value
                 envc["vars"][self.f_ret]["value"] = ret_val
         
             return (None, envc)
 
-class BreakExp(Exp): # DON
+class BreakExp(Exp): # DONE
     def __init__(self):
         self.tmp_var = "TMP"
     
@@ -904,7 +887,7 @@ class BreakExp(Exp): # DON
     def execute(self, env):
         return ("BREAK", env)
 
-class JumpExp(Exp): # DON
+class JumpExp(Exp): # DONE
     def __init__(self):
         self.tmp_var = "TMP"
     
@@ -916,10 +899,11 @@ class JumpExp(Exp): # DON
     def execute(self, env):
         return ("JUMP", env)
 
-class ForExp(Exp): # DON
-    def __init__(self, _id, _body):
+class ForExp(Exp): # DONE
+    def __init__(self, _id, _body, _id_pos):
         self.iter_id = _id
         self.e_body = _body
+        self.iter_id_pos = _id_pos
     
     def print_exp(self, level):
         exp_str = ""
@@ -933,18 +917,17 @@ class ForExp(Exp): # DON
 
         # get list value from the environment
         if not self.iter_id in env["vars"].keys():
-            return ("ERROR", envc)
+            return ("ERROR", exec_error(self.iter_id_pos, f"unknown list {self.iter_id}"))
         iter_list = env["vars"][self.iter_id]["value"]
 
         # ensure that input is a list
         id_type = env["vars"][self.iter_id]["type"]
         if id_type != "list":
-            return ("ERROR", envc)
+            return ("ERROR", exec_error(self.iter_id_pos, f"for loop input must be a list, recieved {id_type}"))
 
         # loop over input list
         for item in iter_list:
             # set item variable in environment
-            #print("yaba 23")
             env["vars"]["item"] = {"const": True, "type": get_jordie_type(item), "value": item}
             
             # run body expression
@@ -958,14 +941,14 @@ class ForExp(Exp): # DON
             elif tmp_val == "EXIT":
                 return ("EXIT", envc)
             elif tmp_val == "ERROR":
-                return ("ERROR", envc)
+                return ("ERROR", env)
             elif tmp_val == "RETURN":
                 ret_val = env
                 return ("RETURN", ret_val)
 
         return (None, envc)
 
-class FuncExp(Exp): # DON
+class FuncExp(Exp): # DONE
     def __init__(self, _id, _type, _args, _body):
         self.f_id = _id
         self.f_type = _type
@@ -990,7 +973,7 @@ class FuncExp(Exp): # DON
         
         return (None, env)
 
-class RetExp(Exp): # DON
+class RetExp(Exp): # DONE
     def __init__(self, _val):
         self.r_val = _val
     
@@ -1002,17 +985,14 @@ class RetExp(Exp): # DON
     
     def execute(self, env):
         # get value from the value expression
-        #print("555 BEFORE")
-        #print(self.r_val)
         val, env = self.r_val.execute(env)
-        #print("555 AFTER")
         if val == "ERROR":
             return ("ERROR", env)
         
         # return value instead of environment
         return ("RETURN", val)
 
-class IfExp(Exp): # DON
+class IfExp(Exp): # DONE
     def __init__(self, _conds, _bodys, _else):
         self.e_conds = _conds
         self.e_bodys = _bodys
@@ -1049,19 +1029,14 @@ class IfExp(Exp): # DON
             # get value from the conditional expression
             cond_val, env = cond.execute(env)
             if cond_val == "ERROR":
-                return ("ERROR", envc)
+                return ("ERROR", env)
             
             # run the body if the condition evaluates to true
             if cond_val:
                 # get all expressions from the body
                 for exp in body.get_exp_list():
                     # run the expression
-                    #print("88888888")
-                    #print(exp)
                     tmp_val, env = exp.execute(env)
-
-                    #print("9999999")
-                    #print(tmp_val)
 
                     # check for break, jump, exit, or error cases
                     if tmp_val == "BREAK":
@@ -1071,7 +1046,7 @@ class IfExp(Exp): # DON
                     elif tmp_val == "EXIT":
                         return ("EXIT", envc)
                     elif tmp_val == "ERROR":
-                        return ("ERROR", envc)
+                        return ("ERROR", env)
                     elif tmp_val == "RETURN":
                         ret_val = env
                         return ("RETURN", ret_val)
@@ -1095,14 +1070,14 @@ class IfExp(Exp): # DON
                 elif tmp_val == "EXIT":
                     return ("EXIT", envc)
                 elif tmp_val == "ERROR":
-                    return ("ERROR", envc)
+                    return ("ERROR", env)
                 elif tmp_val == "RETURN":
                     ret_val = env
                     return ("RETURN", ret_val)
 
         return (None, envc)
 
-class TryExp(Exp): # DON
+class TryExp(Exp): # DONE
     def __init__(self, _body, _err_id, _err_body):
         self.e_body = _body
         self.e_err_id = _err_id
@@ -1121,19 +1096,19 @@ class TryExp(Exp): # DON
         envc = deepcopy(env)
 
         # run the expression
-        val, env = self.e_body.execute(env)
+        val, _env = self.e_body.execute(env)
         if val == "ERROR":
-            error_msg = "An Error Has Occured in TryExp." # need to get the error message from the execution result and put that in error message
-            #print("yaba 24")
-            env["vars"][self.e_err_id] = {"const": True, "type": get_jordie_type(error_msg), "value": error_msg}
+            env["vars"][self.e_err_id] = {"const": True, "type": get_jordie_type(_env), "value": _env}
             val, env = self.e_err_body.execute(env)
-            return (None, envc)
+            if val == "ERROR":
+                return ("ERROR", env)
 
         return (None, envc)
 
-class AssertExp(Exp): # DON
-    def __init__(self, _cond):
+class AssertExp(Exp): # DONE
+    def __init__(self, _cond, _cond_pos):
         self.e_cond = _cond
+        self.e_cond_pos = _cond_pos
     
     def print_exp(self, level):
         exp_str = ""
@@ -1147,13 +1122,13 @@ class AssertExp(Exp): # DON
 
         # handle output cases
         if cond_val == False:
-            return ("ERROR", env) # change this to be some kind of assertion error
+            return ("ERROR", exec_error(self.e_cond_pos, f"assertion failed"))
         elif cond_val == "ERROR":
             return ("ERROR", env)
         
         return(None, env)
 
-class ExitExp(Exp): # DON
+class ExitExp(Exp): # DONE
     def __init__(self):
         self.tmp_var = "TMP"
     
@@ -1176,6 +1151,7 @@ def parse_retrieve_exp(token_list):
         e_id = token[1]
     token, token_list = pop_token(token_list)
     if token[:2] == ("kw", "semicolon"):
+        print(token_list)
         return (RetrieveExp(e_id), token_list)
     else:
         parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
@@ -1288,6 +1264,7 @@ def parse_declare_exp(token_list):
     token, token_list = pop_token(token_list)
     if token[0] == "id":
         t_id = token[1]
+        t_id_pos = token[2]
     else:
         parse_error(token[2], f"unexpected token {token}, expected an 'id'")
     token, token_list = pop_token(token_list)
@@ -1298,7 +1275,7 @@ def parse_declare_exp(token_list):
     
     token, token_list = pop_token(token_list)
     if token[:2] == ("kw", "semicolon"):
-        t_val = ValExp(("val", None))
+        t_val = ValExp(("val", None, t_id_pos), t_id_pos)
         return (DeclareExp(t_id, t_const, t_type, t_val), token_list)
     else:
         tmp_tokens = []
@@ -1319,15 +1296,18 @@ def parse_set_exp(token_list):
         token, token_list = pop_token(token_list)
         if token[0] == "id":
             t_field_id = token[1]
+            t_field_pos = token[2]
             token, token_list = pop_token(token_list)
             if token[0] == "id":
                 t_id = token[1]
+                t_id_pos = token[2]
             else:
                 parse_error(token[2], f"unexpected token {token}, expected an 'id'")
         else:
             parse_error(token[2], f"unexpected token {token}, expected an 'id'")
     elif token[0] == "id":
         t_id = token[1]
+        t_id_pos = token[2]
     else:
         parse_error(token[2], f"unexpected token {token}, expected a 'field' or 'id'")
 
@@ -1340,25 +1320,29 @@ def parse_set_exp(token_list):
     #print("HOLA")
     #print(tmp_tokens)
     t_val = parse_value_tokens(tmp_tokens)
-    return (SetExp(t_id, t_val, t_field_id), token_list)
+    return (SetExp(t_id, t_val, t_field_id, t_id_pos, t_field_pos), token_list)
 
 def parse_call_exp(token_list):
     #print("Call")
     func_id = None
     args = {}
     ret_id = None
+    func_id_pos = "-1,-1"
+    args_pos = {}
+    ret_id_pos = "-1,-1"
     
     token, token_list = pop_token(token_list)
     if token[:2] == ("kw", "functional"):
         token, token_list = pop_token(token_list)
         if token[0] == "id":
             func_id = token[1]
+            func_id_pos = token[2]
         else:
             parse_error(token[2], f"unexpected token {token}, expected an 'id'")
 
         token, token_list = pop_token(token_list)
         if token[:2] == ("kw", "semicolon"):
-            return (CallExp(func_id, args, ret_id), token_list)
+            return (CallExp(func_id, args, ret_id, func_id_pos, args_pos, ret_id_pos), token_list)
         elif token[:2] == ("kw", "pass"):
             token, token_list = pop_token(token_list)
             cnt = 1 # another spot to update arg names
@@ -1369,34 +1353,37 @@ def parse_call_exp(token_list):
                     token, token_list = pop_token(token_list)
                 else:
                     #turn token into ValExp
-                    tmp_val = ValExp(token)
+                    tmp_val = ValExp(token, token[2])
                     args["argument-{}".format(num2words(cnt))] = tmp_val
+                    args_pos["argument-{}".format(num2words(cnt))] = token[2]
                     token, token_list = pop_token(token_list)
                     cnt += 1
             if token[:2] == ("kw", "return"):
                 token, token_list = pop_token(token_list)
                 if token[0] == "id":
                     ret_id = token[1]
+                    ret_id_pos = token[2]
                 else:
                     parse_error(token[2], f"unexpected token {token}, expected an 'id'")
                 token, token_list = pop_token(token_list)
                 if token[:2] == ("kw", "semicolon"):
-                    return (CallExp(func_id, args, ret_id), token_list)
+                    return (CallExp(func_id, args, ret_id, func_id_pos, args_pos, ret_id_pos), token_list)
                 else:
                     parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
             elif token[:2] == ("kw", "semicolon"):
-                return (CallExp(func_id, args, ret_id), token_list)
+                return (CallExp(func_id, args, ret_id, func_id_pos, args_pos, ret_id_pos), token_list)
             else:
                 parse_error(token[2], f"unexpected token {token}, expected ('kw', 'return') or ('kw', 'semicolon')")
         elif token[:2] == ("kw", "return"):
             token, token_list = pop_token(token_list)
             if token[0] == "id":
                 ret_id = token[1]
+                ret_id_pos = token[2]
             else:
                 parse_error(token[2], f"unexpected token {token}, expected an 'id'")
             token, token_list = pop_token(token_list)
             if token[:2] == ("kw", "semicolon"):
-                return (CallExp(func_id, args, ret_id), token_list)
+                return (CallExp(func_id, args, ret_id, func_id_pos, args_pos, ret_id_pos), token_list)
             else:
                 parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
         else:
@@ -1404,7 +1391,7 @@ def parse_call_exp(token_list):
     else:
         parse_error(token[2], f"unexpected token {token}, expected ('kw', 'functional')")
 
-    return (CallExp(func_id, args, ret_id), token_list)
+    return (CallExp(func_id, args, ret_id, func_id_pos, args_pos, ret_id_pos), token_list)
 
 def parse_break_exp(token_list):
     #print("Break")
@@ -1430,6 +1417,7 @@ def parse_for_exp(token_list):
     token, token_list = pop_token(token_list)
     if token[0] == "id":
         items = token[1]
+        items_pos = token[2]
     else:
         parse_error(token[2], f"unexpected token {token}, expected an 'id'")
     
@@ -1443,7 +1431,7 @@ def parse_for_exp(token_list):
             break
 
     token, token_list = pop_token(token_list)
-    return (ForExp(items, body_exp), token_list)
+    return (ForExp(items, body_exp, items_pos), token_list)
 
 def parse_while_exp(token_list):
     #print("While")
@@ -1597,12 +1585,13 @@ def parse_assert_exp(token_list):
     cond_tokens = []
 
     token, token_list = pop_token(token_list)
+    cond_pos = token[2]
     while token[:2] != ("kw", "semicolon"):
         cond_tokens.append(token)
         token, token_list = pop_token(token_list)
     cond_exp = parse_value_tokens(cond_tokens)
     
-    return (AssertExp(cond_exp), token_list)
+    return (AssertExp(cond_exp, cond_pos), token_list)
 
 def parse_exit_exp(token_list):
     #print("Exit")
@@ -1712,7 +1701,7 @@ class AST:
         self.create_env()
         _ret_val, self.env = self.head.execute(self.env)
         if _ret_val == "ERROR":
-            execute_error("An Error Has Occured running AST.")
+            execute_error(self.env)
         return self.env
     
 def parse(token_list):

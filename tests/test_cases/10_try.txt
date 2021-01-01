@@ -2,5 +2,6 @@ try to run the following open-curly-brace
     call functional construct named print and pass in number_one semicolon
 close-curly-brace
 catch error named error and run the following open-curly-brace
+    call functional construct named print and pass in one semicolon
     call functional construct named print and pass in error semicolon
 close-curly-brace

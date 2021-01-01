@@ -1,9 +1,0 @@
-call functional construct named print_five semicolon
-
-call functional construct named add_numbers and pass in number_one and number_two and return value to construct named sum semicolon
-
-call functional construct named print_two_numbers and pass in number_one and number_two semicolon
-
-call functional construct named print and pass in number_one semicolon
-
-call functional construct named get_five and return value to construct named number_five semicolon

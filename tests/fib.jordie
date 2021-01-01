@@ -4,25 +4,34 @@ Fibonacci
 
 comment
 
+
 declare functional construct named fib which returns type integer and receives type integer open-curly-brace
     declare changeable construct named n of type integer with value argument-one semicolon
-    call functional construct named print and pass in n semicolon
     if n is less than zero run the following open-curly-brace
         call functional construct named print and pass in double-quote Error Incorrect Input double-quote semicolon
+        exit
     close-curly-brace
-    or if n is equal to one run the following open-curly-brace
+    or if n is equal to zero run the following open-curly-brace
         return value zero semicolon
     close-curly-brace
-    or if n is equal to two run the following open-curly-brace
+    or if n is equal to one run the following open-curly-brace
         return value one semicolon
     close-curly-brace
-    or run the follwoing open-curly-brace
+    or run the following open-curly-brace
         declare changeable construct named return_value_one of type integer semicolon
         declare changeable construct named return_value_two of type integer semicolon
-        call functional construct named fib and pass in n minus one and return value to construct named return_value_one semicolon
-        call functional construct named fib and pass in n minus two and return value to construct named return_value_two semicolon
-        return return_value_one plus return_value_two
+        set construct named n with value n minus one semicolon
+        call functional construct named fib and pass in n and return value to construct named return_value_one semicolon
+        set construct named n with value n minus one semicolon
+        call functional construct named fib and pass in n and return value to construct named return_value_two semicolon
+        declare changeable construct named return_value of type integer semicolon
+        set construct named return_value with value return_value_one plus return_value_two semicolon
+        return value return_value semicolon
     close-curly-brace
 close-curly-brace
 
+
+declare changeable construct named result of type integer semicolon
+call functional construct named fib and pass in twenty and return value to construct named result semicolon
+call functional construct named print and pass in result semicolon
 

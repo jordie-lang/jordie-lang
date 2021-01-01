@@ -1,5 +1,0 @@
-while counter is greater than zero or counter is equal to zero run the following open-curly-brace
-    call functional construct named print and pass in counter semicolon
-    break out of loop semicolon
-    jump to next iteration semicolon
-close-curly-brace

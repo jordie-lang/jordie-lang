@@ -1,4 +1,0 @@
-declare functional construct named print_five which returns nothing and receives nothing open-curly-brace
-    call functional construct named print and pass in five semicolon
-close-curly-brace
-call functional construct named print_five semicolon

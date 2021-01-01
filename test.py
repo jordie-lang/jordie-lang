@@ -4,13 +4,12 @@ import subprocess
 
 def test_lexer():
     print("#################### Testing Lexer ####################")
-    lex_dir = "tests/lexer"
-    fns = os.listdir(lex_dir + "/test_cases")
+    fns = os.listdir("tests/test_cases")
     fns.sort()
     for fn in fns:
         if fn.endswith(".txt"):
-            test_case_file = lex_dir + "/test_cases/" + fn
-            solution_file = lex_dir + "/solutions/" + fn
+            test_case_file = "tests/test_cases/" + fn
+            solution_file = "tests/solutions/lexer/" + fn
 
             with open(test_case_file, "r") as tf:
                 with open(solution_file, "r") as sf:
@@ -21,11 +20,7 @@ def test_lexer():
                     solution_string = sf.read().rstrip().replace("\r", "")
 
                     if test_string == solution_string:
-                        print("Test case {} PASSED.".format(fn))
-                        print(test_case_source)
-                        print("\n")
-                        print(test_string)
-                        print("\n")
+                        print("Test case {} PASSED.\n".format(fn))
                     else:
                         print("Test case {} FAILED.".format(fn))
                         print("\n### Expected Output ###")
@@ -36,13 +31,12 @@ def test_lexer():
 
 def test_parser():
     print("#################### Testing Parser ####################")
-    lex_dir = "tests/parser"
-    fns = os.listdir(lex_dir + "/test_cases")
+    fns = os.listdir("tests/test_cases")
     fns.sort()
     for fn in fns:
         if fn.endswith(".txt"):
-            test_case_file = lex_dir + "/test_cases/" + fn
-            solution_file = lex_dir + "/solutions/" + fn
+            test_case_file = "tests/test_cases/" + fn
+            solution_file = "tests/solutions/parser/" + fn
 
             with open(test_case_file, "r") as tf:
                 with open(solution_file, "r") as sf:
@@ -68,48 +62,32 @@ def test_parser():
 
 def test_execution():
     print("#################### Testing Execution ####################")
-    lex_dir = "tests/execution"
-    fns = os.listdir(lex_dir + "/test_cases")
+    fns = os.listdir("tests/test_cases")
     fns.sort()
     for fn in fns:
-        if "06" in fn:
-            exit(0)
-        elif "01" in fn:
-            continue
         if fn.endswith(".txt"):
-            test_case_file = lex_dir + "/test_cases/" + fn
-            solution_file = lex_dir + "/solutions/" + fn
+            test_case_file = "tests/test_cases/" + fn
+            solution_file = "tests/solutions/execution/" + fn
 
-            with open(test_case_file, "r") as tf:
-                with open(solution_file, "r") as sf:
-                    print("##### Test case {} #####".format(fn))
-                    test_case_source = tf.read()
-                    tokens = interp.lexer.lex(test_case_source)
-                    ast = interp.parser.parse(tokens)
-                    """
-                    print("*********************** TMP *************************")
-                    ast.execute()
-                    print("*********************** TMP *************************")
-                    """
+            with open(solution_file, "r") as sf:
+                print("##### Test case {} #####".format(fn))
+                test_exec = subprocess.Popen(["python3", "jordie.py", test_case_file], stdout=subprocess.PIPE)
+                test_string = test_exec.communicate()[0]
+                solution_string = sf.read().rstrip().replace("\r", "")
 
-                    test_exec = subprocess.Popen(["python3", "jordie.py", test_case_file], stdout=subprocess.PIPE)
-                    test_string = test_exec.communicate()[0]
-
-                    solution_string = sf.read().rstrip().replace("\r", "")
-
-                    if test_string == solution_string:
-                        print("Test case {} PASSED.".format(fn))
-                        print("\n")
-                    else:
-                        print("Test case {} FAILED.".format(fn))
-                        print("\n### Expected Output ###")
-                        print(solution_string)
-                        print("\n### Generated Output ###")
-                        print(test_string)
-                        print("")
+                if test_string == solution_string:
+                    print("Test case {} PASSED.".format(fn))
+                    print("\n")
+                else:
+                    print("Test case {} FAILED.".format(fn))
+                    print("\n### Expected Output ###")
+                    print(solution_string)
+                    print("\n### Generated Output ###")
+                    print(test_string)
+                    print("")
 
 
 if __name__ == "__main__":
-    #test_lexer()
+    test_lexer()
     #test_parser()
-    test_execution()
+    #test_execution()

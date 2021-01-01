@@ -1,6 +1,0 @@
-try to run the following open-curly-brace
-    call functional construct named print and pass in double-quote passed double-quote semicolon
-close-curly-brace
-catch error named e and run the following open-curly-brace
-    call functional construct named print and pass in double-quote failed double-quote semicolon
-close-curly-brace
