@@ -1,1 +1,5 @@
+call functional construct named print and pass in one semicolon
+
 exit
+
+call functional construct named print and pass in two semicolon

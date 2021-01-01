@@ -9,6 +9,7 @@ from pprint import pprint
 from copy import deepcopy
 
 import json
+from num2words import num2words
 
 # operators
 # operator precedence from lowest to highest
@@ -770,22 +771,7 @@ class CallExp(Exp):
             exp_str += "{}None\n".format("  "*(level+2))
         return exp_str
     
-    def execute(self, env): # (update argument-1 to be argument-one)
-        #print("THE STUFF I WANT TO KNOW")
-        #print(self.f_id)
-        #print(self.f_args)
-        #print(self.f_args["argument-1"].execute(env)[0])
-        #print(self.f_ret)
-        #pprint(env)
-        #print("END OF STUFF")
-        #args_to_remove = []
-        #with open("tmp.txt", "a") as f:
-            #f.write("CALL:\n")
-            #f.write(self.f_id + "\n")
-            #if "argument-1" in self.f_args.keys():
-                #f.write("ARG:\n")
-                #f.write(str(self.f_args["argument-1"].execute(env)[0]) + "\n")
-        
+    def execute(self, env):
         func_args_values = []
 
         # save copy of the environment
@@ -796,12 +782,18 @@ class CallExp(Exp):
             return ("ERROR", envc)
         
         # check args are correct types and add then to the environment
-        for arg in env["funcs"][self.f_id]["args"].keys():# arg = "argument-1"
+        for arg in env["funcs"][self.f_id]["args"].keys():# arg = "argument-one"
+            #print("BOZO")
+            #print(self.f_id)
+            #print(arg)
+            #pprint(env)
             # get argument value expression from input args
             arg_exp = self.f_args[arg]
+            #print("yo 1")
 
             # get value from the value expression
             arg_val, env = arg_exp.execute(env)
+            #print("yo 2")
             if arg_val == "ERROR":
                 return ("ERROR", envc)
             
@@ -811,6 +803,7 @@ class CallExp(Exp):
             arg_type = get_jordie_type(arg_val)
             #print("AFTER")
             check_type = env["funcs"][self.f_id]["args"][arg]
+            #print("yo 3")
             if arg_type != check_type and check_type != "any":
                 return ("ERROR", envc)
 
@@ -827,7 +820,7 @@ class CallExp(Exp):
         #env["vars"]["bruh"] = "why you do this?"
         #pprint(envc)
         #print("GHI789")
-
+        #print("yo 4")
         # ensure variable to store return value is in the environment
         if self.f_ret:
             if not self.f_ret in env["vars"].keys():
@@ -848,8 +841,12 @@ class CallExp(Exp):
                 # run the expression
                 #print("7777777")
                 #print(exp)
+                #print("yo 5")
+                #print(self.f_id)
+                #print(exp)
+                #pprint(env)
                 tmp_val, env = exp.execute(env)
-
+                #print(tmp_val)
                 # check for exit, error, or return cases
                 if tmp_val == "EXIT":
                     return ("EXIT", envc)
@@ -876,6 +873,7 @@ class CallExp(Exp):
             #print(self.f_ret)
             #print(tmp_val)
             #print("HERE I AM AGAIN")
+            #print("yo 6")
             return (None, envc)
         else:
             # run standard library function
@@ -1086,13 +1084,6 @@ class IfExp(Exp): # DON
 
             # get all expressions from the body
             for exp in body.get_exp_list():
-                #with open("tmp.txt", "a") as f:
-                    #f.write("ENV 1037:\n")
-                    #try:
-                        #f.write(str(env["vars"]["argument-1"]["value"]) + "\n")
-                    #except:
-                        #print("dooh")
-
                 # run the expression
                 tmp_val, env = exp.execute(env)
                 
@@ -1132,7 +1123,7 @@ class TryExp(Exp): # DON
         # run the expression
         val, env = self.e_body.execute(env)
         if val == "ERROR":
-            error_msg = "An Error Has Occured in TryExp."
+            error_msg = "An Error Has Occured in TryExp." # need to get the error message from the execution result and put that in error message
             #print("yaba 24")
             env["vars"][self.e_err_id] = {"const": True, "type": get_jordie_type(error_msg), "value": error_msg}
             val, env = self.e_err_body.execute(env)
@@ -1153,7 +1144,11 @@ class AssertExp(Exp): # DON
     def execute(self, env):
         # get value from conditional expression
         cond_val, env = self.e_cond.execute(env)
-        if cond_val == "ERROR":
+
+        # handle output cases
+        if cond_val == False:
+            return ("ERROR", env) # change this to be some kind of assertion error
+        elif cond_val == "ERROR":
             return ("ERROR", env)
         
         return(None, env)
@@ -1224,10 +1219,10 @@ def parse_declare_exp(token_list):
                 if not token[:2] == ("kw", "open-curly-brace"):
                     parse_error(token[2], f"unexpected token {token}, expected ('kw', 'open-curly-brace')")
             else:
-                cnt = 1 # argument-1, change to be argument-one later
+                cnt = 1 # argument-one
                 while(not token[:2] == ("kw", "open-curly-brace")):
                     if token[0] == "type":
-                        f_args["argument-{}".format(str(cnt))] = token[1]
+                        f_args["argument-{}".format(num2words(cnt))] = token[1]
                     elif token[:2] == ("kw", "and"):
                         #nop
                         _nop = "YEET"
@@ -1315,6 +1310,7 @@ def parse_declare_exp(token_list):
 
 def parse_set_exp(token_list):
     #print("Set")
+    #pprint(token_list)
     t_id = ""
     t_val = None
     t_field_id = ""
@@ -1324,6 +1320,10 @@ def parse_set_exp(token_list):
         if token[0] == "id":
             t_field_id = token[1]
             token, token_list = pop_token(token_list)
+            if token[0] == "id":
+                t_id = token[1]
+            else:
+                parse_error(token[2], f"unexpected token {token}, expected an 'id'")
         else:
             parse_error(token[2], f"unexpected token {token}, expected an 'id'")
     elif token[0] == "id":
@@ -1337,6 +1337,8 @@ def parse_set_exp(token_list):
         tmp_tokens.append(token)
         token, token_list = pop_token(token_list)
     
+    #print("HOLA")
+    #print(tmp_tokens)
     t_val = parse_value_tokens(tmp_tokens)
     return (SetExp(t_id, t_val, t_field_id), token_list)
 
@@ -1368,7 +1370,7 @@ def parse_call_exp(token_list):
                 else:
                     #turn token into ValExp
                     tmp_val = ValExp(token)
-                    args["argument-{}".format(str(cnt))] = tmp_val
+                    args["argument-{}".format(num2words(cnt))] = tmp_val
                     token, token_list = pop_token(token_list)
                     cnt += 1
             if token[:2] == ("kw", "return"):
@@ -1693,7 +1695,7 @@ class AST:
                 "jordie-name": {"type": "string", "value": ""}
             },
             "funcs": {
-                "print": {"args": {"argument-1": "any"}, "body": None, "fnc": jordie_print}
+                "print": {"args": {"argument-one": "any"}, "body": None, "fnc": jordie_print}
             },
             "types": {
                 "integer": {},

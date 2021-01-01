@@ -1,5 +1,18 @@
+declare changeable construct named message_one of type string semicolon
 set construct named message_one with value double-quote Hello World! double-quote semicolon
 
+declare changeable construct named counter of type integer semicolon
+declare changeable construct named number_one of type integer with value five semicolon
 set construct named counter with value number_one semicolon
+
+declare structure named address open-curly-brace
+    field named name of type string semicolon
+    field named street of type string semicolon
+    field named city of type string semicolon
+    field named state of type string semicolon
+    field named zip of type integer semicolon
+close-curly-brace
+
+declare changeable construct named my_address of type address semicolon
 
 set field named city of construct named my_address with value double-quote Hoboken double-quote semicolon

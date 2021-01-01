@@ -1,3 +1,5 @@
+declare changeable construct named fruits of type list with value open-square-bracket double-quote mango double-quote double-quote strawberry double-quote double-quote grapes double-quote close-square-bracket semicolon
+
 for every item in the construct named fruits do the following open-curly-brace
     call functional construct named print and pass in item semicolon
     break out of loop semicolon

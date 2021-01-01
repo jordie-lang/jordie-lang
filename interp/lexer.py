@@ -48,7 +48,10 @@ def pop_next_element(s, ln, cc):
 def get_string_value(source_string, ln, cc):
     ecc = cc
     end_index = source_string.find("double-quote")
-    string_val = source_string[:end_index-1]
+    if end_index == 0:
+        string_val = ""
+    else:
+        string_val = source_string[:end_index-1]
     source_string = source_string[end_index+13:]
     cc += end_index + 13
     return (string_val, source_string, ln, cc, ecc)

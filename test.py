@@ -92,7 +92,7 @@ def test_execution():
                     print("*********************** TMP *************************")
                     """
 
-                    test_exec = subprocess.Popen(["python", "jordie.py", test_case_file], stdout=subprocess.PIPE)
+                    test_exec = subprocess.Popen(["python3", "jordie.py", test_case_file], stdout=subprocess.PIPE)
                     test_string = test_exec.communicate()[0]
 
                     solution_string = sf.read().rstrip().replace("\r", "")
@@ -111,5 +111,5 @@ def test_execution():
 
 if __name__ == "__main__":
     #test_lexer()
-    test_parser()
-    #test_execution()
+    #test_parser()
+    test_execution()

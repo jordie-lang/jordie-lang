@@ -32,5 +32,3 @@ declare changeable construct named fruits of type list with value open-square-br
 
 declare changeable construct named facts of type dictionary with value 
     open-curly-brace key double-quote vendor double-quote value double-quote cisco double-quote key double-quote os double-quote value double-quote ios double-quote close-curly-brace semicolon
-
-declare changeable construct named my_address of type address semicolon

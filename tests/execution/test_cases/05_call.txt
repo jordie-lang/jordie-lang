@@ -4,13 +4,13 @@ close-curly-brace
 
 declare functional construct named add_numbers which returns type integer and receives type integer and type integer open-curly-brace
     declare changeable construct named tmp of type integer semicolon
-    set construct named tmp with value argument-1 plus argument-2 semicolon
+    set construct named tmp with value argument-one plus argument-two semicolon
     return value tmp semicolon
 close-curly-brace
 
 declare functional construct named print_two_numbers which returns nothing and receives type integer and type integer open-curly-brace
-    call functional construct named print and pass in argument-1 semicolon
-    call functional construct named print and pass in argument-2 semicolon
+    call functional construct named print and pass in argument-one semicolon
+    call functional construct named print and pass in argument-two semicolon
 close-curly-brace
 
 declare functional construct named get_five which returns type integer and receives nothing open-curly-brace
@@ -24,6 +24,7 @@ declare nonchangeable construct named number_one of type integer with value five
 declare nonchangeable construct named number_two of type integer with value eight semicolon
 declare changeable construct named sum of type integer semicolon
 call functional construct named add_numbers and pass in number_one and number_two and return value to construct named sum semicolon
+call functional construct named print and pass in sum semicolon
 
 call functional construct named print_two_numbers and pass in number_one and number_two semicolon
 

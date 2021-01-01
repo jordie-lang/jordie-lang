@@ -5,3 +5,5 @@ declare structure named address open-curly-brace
     field named state of type string semicolon
     field named zip of type integer semicolon
 close-curly-brace
+
+declare changeable construct named my_address of type address semicolon

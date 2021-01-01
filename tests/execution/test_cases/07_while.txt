@@ -1,5 +1,10 @@
+
+declare changeable construct named counter of type integer with value seven semicolon
 while counter is greater than zero or counter is equal to zero run the following open-curly-brace
     call functional construct named print and pass in counter semicolon
+    set construct named counter with value counter minus one semicolon
+    comment
     break out of loop semicolon
     jump to next iteration semicolon
+    comment
 close-curly-brace
