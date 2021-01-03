@@ -12,4 +12,7 @@ if __name__ == "__main__":
         source_string = f.read()
 
     path = "/".join(args.fn.split("/")[:-1]) + "/"
+    if path == "/":
+        path = "."
+    
     interp.run(source_string, path, verbose=args.v)
