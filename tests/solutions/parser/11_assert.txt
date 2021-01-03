@@ -1,7 +1,19 @@
 BodyExp:
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            val=4
   AssertExp:
     LessExp:
       ValExp:
-        val=5
+        val=7
       ValExp:
         val=6
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            val=5

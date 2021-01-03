@@ -1,39 +1,31 @@
 BodyExp:
+  DeclareExp: id=number_six const=False type=integer
+    value:
+      ValExp:
+        val=6
   IfExp:
-    OrExp:
-      EqualExp:
-        ValExp:
-          id=number_six
-        ValExp:
-          val=6
-      LessExp:
-        ValExp:
-          id=number_six
-        ValExp:
-          val=6
+    LessExp:
+      ValExp:
+        id=number_six
+      ValExp:
+        val=6
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: argument-1
+          Arg: argument-one
             value:
               ValExp:
                 val=if was true
   Else If:
-    OrExp:
-      EqualExp:
-        ValExp:
-          id=number_six
-        ValExp:
-          val=6
-      LessExp:
-        ValExp:
-          id=number_six
-        ValExp:
-          val=6
+    LessExp:
+      ValExp:
+        id=number_six
+      ValExp:
+        val=6
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: argument-1
+          Arg: argument-one
             value:
               ValExp:
                 val=if was true
@@ -41,7 +33,7 @@ BodyExp:
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: argument-1
+          Arg: argument-one
             value:
               ValExp:
                 val=else case

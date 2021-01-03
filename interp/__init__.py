@@ -3,7 +3,7 @@ from . import parser
 from pprint import pprint
 import json
 
-def run(soure_string, verbose=False):
+def run(soure_string, path, verbose=False):
     token_list = lexer.lex(soure_string)
 
     if verbose:
@@ -12,7 +12,7 @@ def run(soure_string, verbose=False):
             print(token)
         print()
     
-    ast = parser.parse(token_list)
+    ast = parser.parse(token_list, path)
 
     if verbose:
         ast.print_tree()

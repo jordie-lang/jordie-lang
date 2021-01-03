@@ -1,11 +1,32 @@
 BodyExp:
+  DeclareExp: id=fruits const=False type=list
+    value:
+      ValExp:
+        val=['mango', 'strawberry', 'grapes']
   ForExp: id=fruits
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: argument-1
+          Arg: argument-one
+            value:
+              ValExp:
+                id=item
+  ForExp: id=fruits
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-one
             value:
               ValExp:
                 id=item
       BreakExp
+  ForExp: id=fruits
+    BodyExp:
       JumpExp
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-one
+            value:
+              ValExp:
+                id=item
+      BreakExp

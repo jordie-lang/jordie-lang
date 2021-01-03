@@ -1,2 +1,14 @@
 BodyExp:
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            val=1
   ExitExp
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            val=2

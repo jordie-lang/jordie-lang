@@ -1,1 +1,8 @@
-retrieve source from file named fib semicolon
+
+call functional construct named print and pass in eight semicolon
+
+retrieve source from file named ../fib semicolon
+
+declare changeable construct named result of type integer semicolon
+call functional construct named fib and pass in eight  and return value to construct named result semicolon
+call functional construct named print and pass in result semicolon

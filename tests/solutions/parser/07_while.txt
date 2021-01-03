@@ -1,4 +1,8 @@
 BodyExp:
+  DeclareExp: id=counter const=False type=integer
+    value:
+      ValExp:
+        val=7
   WhileExp:
     OrExp:
       GreaterExp:
@@ -14,9 +18,76 @@ BodyExp:
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: argument-1
+          Arg: argument-one
             value:
               ValExp:
                 id=counter
+      SetExp: id=counter field_id=
+        value:
+          SubExp:
+            ValExp:
+              id=counter
+            ValExp:
+              val=1
+  DeclareExp: id=counter const=False type=integer
+    value:
+      ValExp:
+        val=7
+  WhileExp:
+    OrExp:
+      GreaterExp:
+        ValExp:
+          id=counter
+        ValExp:
+          val=0
+      EqualExp:
+        ValExp:
+          id=counter
+        ValExp:
+          val=0
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-one
+            value:
+              ValExp:
+                id=counter
+      SetExp: id=counter field_id=
+        value:
+          SubExp:
+            ValExp:
+              id=counter
+            ValExp:
+              val=1
       BreakExp
+  DeclareExp: id=counter const=False type=integer
+    value:
+      ValExp:
+        val=7
+  WhileExp:
+    OrExp:
+      GreaterExp:
+        ValExp:
+          id=counter
+        ValExp:
+          val=0
+      EqualExp:
+        ValExp:
+          id=counter
+        ValExp:
+          val=0
+    BodyExp:
+      SetExp: id=counter field_id=
+        value:
+          SubExp:
+            ValExp:
+              id=counter
+            ValExp:
+              val=1
       JumpExp
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-one
+            value:
+              ValExp:
+                id=counter

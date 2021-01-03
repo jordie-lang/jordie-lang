@@ -9,6 +9,8 @@ from copy import deepcopy
 from num2words import num2words
 from pprint import pprint
 
+import os
+
 
 # operators
 # operator precedence from lowest to highest
@@ -113,8 +115,6 @@ def check_jordie_types(foo, f_type):
         execute_error("unknown type 1")
 
 def get_jordie_type(foo):
-    #print("BAD")
-    #print(foo)
     if type(foo) == int:
         return "integer"
     elif type(foo) == float:
@@ -141,7 +141,7 @@ class Exp():
         exit(0)
         return "RUN EXP"
 
-class ValExp(Exp): # DONE
+class ValExp(Exp): 
     def __init__(self, _data_token, _pos):
         if _data_token[0] == "id":
             self.is_id = True
@@ -175,7 +175,7 @@ class ValExp(Exp): # DONE
             # return value of ValExp
             return (self.data, env)
 
-class MultExp(Exp): # DONE
+class MultExp(Exp): 
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -217,7 +217,7 @@ class MultExp(Exp): # DONE
         # return multiplication of left and right values
         return (l_val*r_val, env)
 
-class DivExp(Exp): # DONE
+class DivExp(Exp): 
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -259,7 +259,7 @@ class DivExp(Exp): # DONE
         # return division of left and right values
         return (l_val/r_val, env)
 
-class AddExp(Exp): # DONE
+class AddExp(Exp): 
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -301,7 +301,7 @@ class AddExp(Exp): # DONE
         # return addition of left and right values
         return (l_val+r_val, env)
 
-class SubExp(Exp): #DONE
+class SubExp(Exp): 
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -343,7 +343,7 @@ class SubExp(Exp): #DONE
         # return subtraction of left and right values
         return (l_val-r_val, env)
 
-class EqualExp(Exp): # DON (will need to add code to check equivalience of custom data types)
+class EqualExp(Exp):
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -379,7 +379,7 @@ class EqualExp(Exp): # DON (will need to add code to check equivalience of custo
         # return equivalence comparison of left and right values
         return (l_val==r_val, env)
 
-class GreaterExp(Exp): # DONE
+class GreaterExp(Exp): 
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -415,7 +415,7 @@ class GreaterExp(Exp): # DONE
         # return greater comparison of left and right values
         return (l_val>r_val, env)
 
-class LessExp(Exp): # DONE
+class LessExp(Exp): 
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -451,7 +451,7 @@ class LessExp(Exp): # DONE
         # return less comparison of left and right values
         return (l_val<r_val, env)
 
-class NotExp(Exp): # DONE
+class NotExp(Exp): 
     def __init__(self, _right, _pos):
         self.right_exp = _right
         self.pos = _pos
@@ -480,7 +480,7 @@ class NotExp(Exp): # DONE
         # return boolean not of right value
         return (not r_val, env)
 
-class AndExp(Exp): # DONE
+class AndExp(Exp): 
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -516,7 +516,7 @@ class AndExp(Exp): # DONE
         # return boolean and of left and right values
         return (l_val and r_val, env)
 
-class OrExp(Exp): # DONE
+class OrExp(Exp): 
     def __init__(self, _left, _right, _pos):
         self.left_exp = _left
         self.right_exp = _right
@@ -552,7 +552,7 @@ class OrExp(Exp): # DONE
         # return boolean or of right value
         return (l_val or r_val, env)
 
-class BodyExp(Exp): # DONE
+class BodyExp(Exp): 
     def __init__(self):
         self.exp_list = []
 
@@ -572,11 +572,6 @@ class BodyExp(Exp): # DONE
     def execute(self, env):
         # run each expression in the body expression
         for exp in self.exp_list:
-            # don't update environment from sub body expressions
-            # if isinstance(exp, BodyExp):
-            #     val, _body_env = exp.execute(env)
-            # else:
-            #     val, env = exp.execute(env)
             val, env = exp.execute(env)
             
             # check for an error or a break statement to stop loop execution
@@ -587,7 +582,7 @@ class BodyExp(Exp): # DONE
 
         return (None, env)
 
-class StructExp(Exp): # DONE
+class StructExp(Exp): 
     def __init__(self, _id, _e_fields):
         self.e_id = _id
         self.e_fields = _e_fields
@@ -610,9 +605,10 @@ class StructExp(Exp): # DONE
         
         return (None, env)
 
-class RetrieveExp(Exp): # DONE
-    def __init__(self, _id):
+class RetrieveExp(Exp): 
+    def __init__(self, _id, _path):
         self.e_id = _id
+        self.s_path = _path
     
     def print_exp(self, level):
         exp_str = ""
@@ -620,12 +616,35 @@ class RetrieveExp(Exp): # DONE
         return exp_str
     
     def execute(self, env):
-        # get source from file
-        with open(self.e_id + ".jordie", "r") as f:
-            test_case_source = f.read()
+        # string to hold module source string
+        source_string = ""
+
+        # add '.jordie' to module name if not present
+        if self.e_id.endswith(".jordie"):
+            fn = self.e_id
+        else:
+            fn = self.e_id + ".jordie"
+
+
+        # check if filename is a filepath
+        if self.e_id.startswith(".") or "/" in self.e_id:
+            path = "/".join(fn.split("/")[:-1]) + "/"
+            fn = fn.split("/")[-1]
+        else:
+            path = ""
+        
+        path = os.path.join(self.s_path, path)
+        
+        # check if file exists
+        if fn in os.listdir(path) and os.path.isfile(path+fn):
+            # get module source
+            with open(path+fn, "r") as f:
+                source_string = f.read()
+        else:
+            return ("ERROR", f"module {path+fn} doesn't exist")
         
         # run lexer and parser on source
-        source_ast = parse(lexer.lex(test_case_source))
+        source_ast = parse(lexer.lex(source_string), path)
 
         # get source BodyExp
         body = source_ast.get_body()
@@ -637,7 +656,7 @@ class RetrieveExp(Exp): # DONE
         
         return (None, env)
 
-class DeclareExp(Exp): # DONE
+class DeclareExp(Exp): 
     def __init__(self, _id, _const, _type, _value=None):
         self.e_id = _id
         self.e_const = _const
@@ -679,7 +698,7 @@ class DeclareExp(Exp): # DONE
         
         return (None, env)
 
-class SetExp(Exp): # DONE
+class SetExp(Exp): 
     def __init__(self, _id, _val, _field_id, _id_pos, _field_pos):
         self.e_id = _id
         self.e_val = _val
@@ -724,7 +743,7 @@ class SetExp(Exp): # DONE
         
         return (None, env)
 
-class WhileExp(Exp): # DONE
+class WhileExp(Exp): 
     def __init__(self, _cond, _body):
         self.e_cond = _cond
         self.e_body = _body
@@ -772,7 +791,7 @@ class WhileExp(Exp): # DONE
         
         return (None, envc)
 
-class CallExp(Exp): # DONE
+class CallExp(Exp): 
     def __init__(self, _f_id, _args, _ret_id, _f_id_pos, _args_pos, _ret_id_pos):
         self.f_id = _f_id
         self.f_args = _args
@@ -875,7 +894,7 @@ class CallExp(Exp): # DONE
         
             return (None, envc)
 
-class BreakExp(Exp): # DONE
+class BreakExp(Exp): 
     def __init__(self):
         self.tmp_var = "TMP"
     
@@ -887,7 +906,7 @@ class BreakExp(Exp): # DONE
     def execute(self, env):
         return ("BREAK", env)
 
-class JumpExp(Exp): # DONE
+class JumpExp(Exp): 
     def __init__(self):
         self.tmp_var = "TMP"
     
@@ -899,7 +918,7 @@ class JumpExp(Exp): # DONE
     def execute(self, env):
         return ("JUMP", env)
 
-class ForExp(Exp): # DONE
+class ForExp(Exp): 
     def __init__(self, _id, _body, _id_pos):
         self.iter_id = _id
         self.e_body = _body
@@ -929,26 +948,28 @@ class ForExp(Exp): # DONE
         for item in iter_list:
             # set item variable in environment
             env["vars"]["item"] = {"const": True, "type": get_jordie_type(item), "value": item}
-            
-            # run body expression
-            tmp_val, env = self.e_body.execute(env)
 
-            # check for break, jump, exit, or error cases
-            if tmp_val == "BREAK":
-                return (None, envc)
-            elif tmp_val == "JUMP":
-                continue
-            elif tmp_val == "EXIT":
-                return ("EXIT", envc)
-            elif tmp_val == "ERROR":
-                return ("ERROR", env)
-            elif tmp_val == "RETURN":
-                ret_val = env
-                return ("RETURN", ret_val)
+            # get all expressions from the body
+            for exp in self.e_body.get_exp_list():
+                # run the expression
+                tmp_val, env = exp.execute(env)
+
+                # check for break, jump, exit, or error cases
+                if tmp_val == "BREAK":
+                    return (None, envc)
+                elif tmp_val == "JUMP":
+                    break
+                elif tmp_val == "EXIT":
+                    return ("EXIT", envc)
+                elif tmp_val == "ERROR":
+                    return ("ERROR", env)
+                elif tmp_val == "RETURN":
+                    ret_val = env
+                    return ("RETURN", ret_val)
 
         return (None, envc)
 
-class FuncExp(Exp): # DONE
+class FuncExp(Exp): 
     def __init__(self, _id, _type, _args, _body):
         self.f_id = _id
         self.f_type = _type
@@ -973,7 +994,7 @@ class FuncExp(Exp): # DONE
         
         return (None, env)
 
-class RetExp(Exp): # DONE
+class RetExp(Exp): 
     def __init__(self, _val):
         self.r_val = _val
     
@@ -992,7 +1013,7 @@ class RetExp(Exp): # DONE
         # return value instead of environment
         return ("RETURN", val)
 
-class IfExp(Exp): # DONE
+class IfExp(Exp): 
     def __init__(self, _conds, _bodys, _else):
         self.e_conds = _conds
         self.e_bodys = _bodys
@@ -1077,7 +1098,7 @@ class IfExp(Exp): # DONE
 
         return (None, envc)
 
-class TryExp(Exp): # DONE
+class TryExp(Exp): 
     def __init__(self, _body, _err_id, _err_body):
         self.e_body = _body
         self.e_err_id = _err_id
@@ -1105,7 +1126,7 @@ class TryExp(Exp): # DONE
 
         return (None, envc)
 
-class AssertExp(Exp): # DONE
+class AssertExp(Exp): 
     def __init__(self, _cond, _cond_pos):
         self.e_cond = _cond
         self.e_cond_pos = _cond_pos
@@ -1128,7 +1149,7 @@ class AssertExp(Exp): # DONE
         
         return(None, env)
 
-class ExitExp(Exp): # DONE
+class ExitExp(Exp): 
     def __init__(self):
         self.tmp_var = "TMP"
     
@@ -1143,28 +1164,24 @@ class ExitExp(Exp): # DONE
 def pop_token(token_list):
     return (token_list[0], token_list[1:])
 
-def parse_retrieve_exp(token_list):
-    #print("Retrieve")
+def parse_retrieve_exp(token_list, path):
     e_id = ""
     token, token_list = pop_token(token_list)
     if token[0] == "id":
         e_id = token[1]
     token, token_list = pop_token(token_list)
     if token[:2] == ("kw", "semicolon"):
-        print(token_list)
-        return (RetrieveExp(e_id), token_list)
+        return (RetrieveExp(e_id, path), token_list)
     else:
         parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
 
-def parse_declare_exp(token_list):
-    #print("Declare")
+def parse_declare_exp(token_list, path):
     t_id = ""
     t_const = False
     t_type = ""
     t_val = None
     token, token_list = pop_token(token_list)
     if token[:2] == ("kw", "functional"):
-        #declare function
         f_id = ""
         f_type = ""
         f_args = {}
@@ -1195,12 +1212,12 @@ def parse_declare_exp(token_list):
                 if not token[:2] == ("kw", "open-curly-brace"):
                     parse_error(token[2], f"unexpected token {token}, expected ('kw', 'open-curly-brace')")
             else:
-                cnt = 1 # argument-one
+                cnt = 1
                 while(not token[:2] == ("kw", "open-curly-brace")):
                     if token[0] == "type":
                         f_args["argument-{}".format(num2words(cnt))] = token[1]
                     elif token[:2] == ("kw", "and"):
-                        #nop
+                        # nop
                         _nop = "YEET"
                     else:
                         parse_error(token[2], f"unexpected token {token}, expected ('kw', 'open-curly-brace') or ('kw', 'and')")
@@ -1211,7 +1228,7 @@ def parse_declare_exp(token_list):
         
         f_body = BodyExp()
         while(not token[:2] == ("kw", "close-curly-brace")):
-            tmp_exp, token_list = parse_next_exp(token_list)
+            tmp_exp, token_list = parse_next_exp(token_list, path)
             f_body.append(tmp_exp)
             if token_list[0][:2] == ("kw", "close-curly-brace"):
                 break
@@ -1285,12 +1302,11 @@ def parse_declare_exp(token_list):
         t_val = parse_value_tokens(tmp_tokens)
         return (DeclareExp(t_id, t_const, t_type, t_val), token_list)
 
-def parse_set_exp(token_list):
-    #print("Set")
-    #pprint(token_list)
+def parse_set_exp(token_list, path):
     t_id = ""
     t_val = None
     t_field_id = ""
+    t_field_pos = "-1,-1"
     token, token_list = pop_token(token_list)
     if token[:2] == ("kw", "field"):
         token, token_list = pop_token(token_list)
@@ -1317,13 +1333,10 @@ def parse_set_exp(token_list):
         tmp_tokens.append(token)
         token, token_list = pop_token(token_list)
     
-    #print("HOLA")
-    #print(tmp_tokens)
     t_val = parse_value_tokens(tmp_tokens)
     return (SetExp(t_id, t_val, t_field_id, t_id_pos, t_field_pos), token_list)
 
-def parse_call_exp(token_list):
-    #print("Call")
+def parse_call_exp(token_list, path):
     func_id = None
     args = {}
     ret_id = None
@@ -1345,14 +1358,12 @@ def parse_call_exp(token_list):
             return (CallExp(func_id, args, ret_id, func_id_pos, args_pos, ret_id_pos), token_list)
         elif token[:2] == ("kw", "pass"):
             token, token_list = pop_token(token_list)
-            cnt = 1 # another spot to update arg names
+            cnt = 1
             while(not (token[:2] == ("kw", "return") or token[:2] == ("kw", "semicolon"))):
                 if token[:2] == ("kw", "and"):
-                    # this is where i would make a change to allow expressions inside call params
-                    # nop
                     token, token_list = pop_token(token_list)
                 else:
-                    #turn token into ValExp
+                    # turn token into ValExp
                     tmp_val = ValExp(token, token[2])
                     args["argument-{}".format(num2words(cnt))] = tmp_val
                     args_pos["argument-{}".format(num2words(cnt))] = token[2]
@@ -1393,24 +1404,21 @@ def parse_call_exp(token_list):
 
     return (CallExp(func_id, args, ret_id, func_id_pos, args_pos, ret_id_pos), token_list)
 
-def parse_break_exp(token_list):
-    #print("Break")
+def parse_break_exp(token_list, path):
     token, token_list = pop_token(token_list)
     if token[:2] == ("kw", "semicolon"):
         return (BreakExp(), token_list)
     else:
         parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
 
-def parse_jump_exp(token_list):
-    #print("Jump")
+def parse_jump_exp(token_list, path):
     token, token_list = pop_token(token_list)
     if token[:2] == ("kw", "semicolon"):
         return (JumpExp(), token_list)
     else:
         parse_error(token[2], f"unexpected token {token}, expected ('kw', 'semicolon')")
 
-def parse_for_exp(token_list):
-    #print("For")
+def parse_for_exp(token_list, path):
     items = None
     body_exp = None
 
@@ -1424,7 +1432,7 @@ def parse_for_exp(token_list):
     body_exp = BodyExp()
     token, token_list = pop_token(token_list)
     while(not token[:2] == ("kw", "close-curly-brace")):
-        tmp_exp, token_list = parse_next_exp(token_list)
+        tmp_exp, token_list = parse_next_exp(token_list, path)
         body_exp.append(tmp_exp)
 
         if token_list[0][:2] == ("kw", "close-curly-brace"):
@@ -1433,8 +1441,7 @@ def parse_for_exp(token_list):
     token, token_list = pop_token(token_list)
     return (ForExp(items, body_exp, items_pos), token_list)
 
-def parse_while_exp(token_list):
-    #print("While")
+def parse_while_exp(token_list, path):
     cond_exp = None
     body_exp = None
 
@@ -1447,7 +1454,7 @@ def parse_while_exp(token_list):
 
     body_exp = BodyExp()
     while(not token[:2] == ("kw", "close-curly-brace")):
-        tmp_exp, token_list = parse_next_exp(token_list)
+        tmp_exp, token_list = parse_next_exp(token_list, path)
         body_exp.append(tmp_exp)
 
         if token_list[0][:2] == ("kw", "close-curly-brace"):
@@ -1456,8 +1463,7 @@ def parse_while_exp(token_list):
     token, token_list = pop_token(token_list)
     return (WhileExp(cond_exp, body_exp), token_list)
 
-def parse_return_exp(token_list):
-    #print("Return")
+def parse_return_exp(token_list, path):
     val_tokens = []
     token, token_list = pop_token(token_list)
     while(not token[:2] == ("kw", "semicolon")):
@@ -1468,8 +1474,7 @@ def parse_return_exp(token_list):
     
     return (RetExp(r_val), token_list)
 
-def parse_if_exp(token_list):
-    #print("IF")
+def parse_if_exp(token_list, path):
     conds = []
     bodys = []
     else_case = False
@@ -1485,7 +1490,7 @@ def parse_if_exp(token_list):
 
     body_exp = BodyExp()
     while(not token[:2] == ("kw", "close-curly-brace")):
-        tmp_exp, token_list = parse_next_exp(token_list)
+        tmp_exp, token_list = parse_next_exp(token_list, path)
         body_exp.append(tmp_exp)
 
         if token_list[0][:2] == ("kw", "close-curly-brace"):
@@ -1511,7 +1516,7 @@ def parse_if_exp(token_list):
 
             body_exp = BodyExp()
             while(not token[:2] == ("kw", "close-curly-brace")):
-                tmp_exp, token_list = parse_next_exp(token_list)
+                tmp_exp, token_list = parse_next_exp(token_list, path)
                 
                 body_exp.append(tmp_exp)
 
@@ -1524,7 +1529,7 @@ def parse_if_exp(token_list):
             else_case = True
             body_exp = BodyExp()
             while(not token[:2] == ("kw", "close-curly-brace")):
-                tmp_exp, token_list = parse_next_exp(token_list)
+                tmp_exp, token_list = parse_next_exp(token_list, path)
                 body_exp.append(tmp_exp)
 
                 if token_list[0][:2] == ("kw", "close-curly-brace"):
@@ -1537,8 +1542,7 @@ def parse_if_exp(token_list):
             break
     return (IfExp(conds, bodys, else_case), token_list)
 
-def parse_try_exp(token_list):
-    #print("Try")
+def parse_try_exp(token_list, path):
     body_exp = None
     error_id = None
     error_body = None
@@ -1549,7 +1553,7 @@ def parse_try_exp(token_list):
 
     body_exp = BodyExp()
     while(not token[:2] == ("kw", "close-curly-brace")):
-        tmp_exp, token_list = parse_next_exp(token_list)
+        tmp_exp, token_list = parse_next_exp(token_list, path)
         body_exp.append(tmp_exp)
 
         if token_list[0][:2] == ("kw", "close-curly-brace"):
@@ -1572,7 +1576,7 @@ def parse_try_exp(token_list):
 
     error_body = BodyExp()
     while(not token[:2] == ("kw", "close-curly-brace")):
-        tmp_exp, token_list = parse_next_exp(token_list)
+        tmp_exp, token_list = parse_next_exp(token_list, path)
         error_body.append(tmp_exp)
 
         if token_list[0][:2] == ("kw", "close-curly-brace"):
@@ -1580,8 +1584,7 @@ def parse_try_exp(token_list):
     token, token_list = pop_token(token_list)
     return (TryExp(body_exp, error_id, error_body), token_list)
 
-def parse_assert_exp(token_list):
-    #print("Assert")
+def parse_assert_exp(token_list, path):
     cond_tokens = []
 
     token, token_list = pop_token(token_list)
@@ -1593,39 +1596,38 @@ def parse_assert_exp(token_list):
     
     return (AssertExp(cond_exp, cond_pos), token_list)
 
-def parse_exit_exp(token_list):
-    #print("Exit")
+def parse_exit_exp(token_list, path):
     return (ExitExp(), token_list)
 
-def parse_next_exp(token_list):
+def parse_next_exp(token_list, path):
     token, token_list = pop_token(token_list)
     tmp_exp = None
     if token[:2] == ("kw", "retrieve"):
-        tmp_exp, token_list = parse_retrieve_exp(token_list)
+        tmp_exp, token_list = parse_retrieve_exp(token_list, path)
     elif token[:2] == ("kw", "declare"):
-        tmp_exp, token_list = parse_declare_exp(token_list)
+        tmp_exp, token_list = parse_declare_exp(token_list, path)
     elif token[:2] == ("kw", "set"):
-        tmp_exp, token_list = parse_set_exp(token_list)
+        tmp_exp, token_list = parse_set_exp(token_list, path)
     elif token[:2] == ("kw", "while"):
-        tmp_exp, token_list = parse_while_exp(token_list)
+        tmp_exp, token_list = parse_while_exp(token_list, path)
     elif token[:2] == ("kw", "call"):
-        tmp_exp, token_list = parse_call_exp(token_list)
+        tmp_exp, token_list = parse_call_exp(token_list, path)
     elif token[:2] == ("kw", "break"):
-        tmp_exp, token_list = parse_break_exp(token_list)
+        tmp_exp, token_list = parse_break_exp(token_list, path)
     elif token[:2] == ("kw", "jump"):
-        tmp_exp, token_list = parse_jump_exp(token_list)
+        tmp_exp, token_list = parse_jump_exp(token_list, path)
     elif token[:2] == ("kw", "for"):
-        tmp_exp, token_list = parse_for_exp(token_list)
+        tmp_exp, token_list = parse_for_exp(token_list, path)
     elif token[:2] == ("kw", "return"):
-        tmp_exp, token_list = parse_return_exp(token_list)
+        tmp_exp, token_list = parse_return_exp(token_list, path)
     elif token[:2] == ("kw", "if"):
-        tmp_exp, token_list = parse_if_exp(token_list)
+        tmp_exp, token_list = parse_if_exp(token_list, path)
     elif token[:2] == ("kw", "try"):
-        tmp_exp, token_list = parse_try_exp(token_list)
+        tmp_exp, token_list = parse_try_exp(token_list, path)
     elif token[:2] == ("kw", "assert"):
-        tmp_exp, token_list = parse_assert_exp(token_list)
+        tmp_exp, token_list = parse_assert_exp(token_list, path)
     elif token[:2] == ("kw", "exit"):
-        tmp_exp, token_list = parse_exit_exp(token_list)
+        tmp_exp, token_list = parse_exit_exp(token_list, path)
     else:
         parse_error(token[2], f"unexpected token {token}, expected a keyword ['retrieve', 'declare', 'set', 'while', 'call', 'break', 'jump', 'for', 'return', 'if', 'try', 'assert', 'exit']")
     return (tmp_exp, token_list)
@@ -1635,36 +1637,36 @@ class AST:
         self.head = BodyExp()
         self.env = {}
 
-    def parse_tokens(self, token_list):
+    def parse_tokens(self, token_list, path):
         while(token_list):
             token, token_list = pop_token(token_list)
             tmp_exp = None
             if token[:2] == ("kw", "retrieve"):
-                tmp_exp, token_list = parse_retrieve_exp(token_list)
+                tmp_exp, token_list = parse_retrieve_exp(token_list, path)
             elif token[:2] == ("kw", "declare"):
-                tmp_exp, token_list = parse_declare_exp(token_list)
+                tmp_exp, token_list = parse_declare_exp(token_list, path)
             elif token[:2] == ("kw", "set"):
-                tmp_exp, token_list = parse_set_exp(token_list)
+                tmp_exp, token_list = parse_set_exp(token_list, path)
             elif token[:2] == ("kw", "while"):
-                tmp_exp, token_list = parse_while_exp(token_list)
+                tmp_exp, token_list = parse_while_exp(token_list, path)
             elif token[:2] == ("kw", "call"):
-                tmp_exp, token_list = parse_call_exp(token_list)
+                tmp_exp, token_list = parse_call_exp(token_list, path)
             elif token[:2] == ("kw", "break"):
-                tmp_exp, token_list = parse_break_exp(token_list)
+                tmp_exp, token_list = parse_break_exp(token_list, path)
             elif token[:2] == ("kw", "jump"):
-                tmp_exp, token_list = parse_jump_exp(token_list)
+                tmp_exp, token_list = parse_jump_exp(token_list, path)
             elif token[:2] == ("kw", "for"):
-                tmp_exp, token_list = parse_for_exp(token_list)
+                tmp_exp, token_list = parse_for_exp(token_list, path)
             elif token[:2] == ("kw", "return"):
-                tmp_exp, token_list = parse_return_exp(token_list)
+                tmp_exp, token_list = parse_return_exp(token_list, path)
             elif token[:2] == ("kw", "if"):
-                tmp_exp, token_list = parse_if_exp(token_list)
+                tmp_exp, token_list = parse_if_exp(token_list, path)
             elif token[:2] == ("kw", "try"):
-                tmp_exp, token_list = parse_try_exp(token_list)
+                tmp_exp, token_list = parse_try_exp(token_list, path)
             elif token[:2] == ("kw", "assert"):
-                tmp_exp, token_list = parse_assert_exp(token_list)
+                tmp_exp, token_list = parse_assert_exp(token_list, path)
             elif token[:2] == ("kw", "exit"):
-                tmp_exp, token_list = parse_exit_exp(token_list)
+                tmp_exp, token_list = parse_exit_exp(token_list, path)
             else:
                 parse_error(token[2], f"unexpected token {token}, expected a keyword ['retrieve', 'declare', 'set', 'while', 'call', 'break', 'jump', 'for', 'return', 'if', 'try', 'assert', 'exit']")
             self.head.append(tmp_exp)
@@ -1704,7 +1706,7 @@ class AST:
             execute_error(self.env)
         return self.env
     
-def parse(token_list):
+def parse(token_list, path):
     ast = AST()
-    ast.parse_tokens(token_list)
+    ast.parse_tokens(token_list, path)
     return ast

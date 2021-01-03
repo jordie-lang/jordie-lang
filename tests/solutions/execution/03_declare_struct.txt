@@ -1,0 +1,1 @@
+{'name': {'type': 'string', 'value': None}, 'street': {'type': 'string', 'value': None}, 'city': {'type': 'string', 'value': None}, 'state': {'type': 'string', 'value': None}, 'zip': {'type': 'integer', 'value': None}}

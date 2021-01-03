@@ -3,15 +3,21 @@ BodyExp:
     BodyExp:
       CallExp: func_id=print ret_id=None
         Args:
-          Arg: argument-1
+          Arg: argument-one
             value:
               ValExp:
-                val=passed
-    Catch: id=e
+                id=number_one
+    Catch: id=error
       BodyExp:
         CallExp: func_id=print ret_id=None
           Args:
-            Arg: argument-1
+            Arg: argument-one
               value:
                 ValExp:
-                  val=failed
+                  val=1
+        CallExp: func_id=print ret_id=None
+          Args:
+            Arg: argument-one
+              value:
+                ValExp:
+                  id=error

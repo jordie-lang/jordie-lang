@@ -1,33 +1,108 @@
 BodyExp:
+  FuncExp: id=print_five type=nothing
+    Args:
+      None
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-one
+            value:
+              ValExp:
+                val=5
+  FuncExp: id=add_numbers type=integer
+    Args:
+      Arg: argument-one=integer
+      Arg: argument-two=integer
+    BodyExp:
+      DeclareExp: id=tmp const=False type=integer
+        value:
+          ValExp:
+            val=None
+      SetExp: id=tmp field_id=
+        value:
+          AddExp:
+            ValExp:
+              id=argument-one
+            ValExp:
+              id=argument-two
+      RetExp:
+        ValExp:
+          id=tmp
+  FuncExp: id=print_two_numbers type=nothing
+    Args:
+      Arg: argument-one=integer
+      Arg: argument-two=integer
+    BodyExp:
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-one
+            value:
+              ValExp:
+                id=argument-one
+      CallExp: func_id=print ret_id=None
+        Args:
+          Arg: argument-one
+            value:
+              ValExp:
+                id=argument-two
+  FuncExp: id=get_five type=integer
+    Args:
+      None
+    BodyExp:
+      RetExp:
+        ValExp:
+          val=5
   CallExp: func_id=print_five ret_id=None
     Args:
       None
+  DeclareExp: id=number_one const=True type=integer
+    value:
+      ValExp:
+        val=5
+  DeclareExp: id=number_two const=True type=integer
+    value:
+      ValExp:
+        val=8
+  DeclareExp: id=sum const=False type=integer
+    value:
+      ValExp:
+        val=None
   CallExp: func_id=add_numbers ret_id=sum
     Args:
-      Arg: argument-1
+      Arg: argument-one
         value:
           ValExp:
             id=number_one
-      Arg: argument-2
-        value:
-          ValExp:
-            id=number_two
-  CallExp: func_id=print_two_numbers ret_id=None
-    Args:
-      Arg: argument-1
-        value:
-          ValExp:
-            id=number_one
-      Arg: argument-2
+      Arg: argument-two
         value:
           ValExp:
             id=number_two
   CallExp: func_id=print ret_id=None
     Args:
-      Arg: argument-1
+      Arg: argument-one
+        value:
+          ValExp:
+            id=sum
+  CallExp: func_id=print_two_numbers ret_id=None
+    Args:
+      Arg: argument-one
         value:
           ValExp:
             id=number_one
+      Arg: argument-two
+        value:
+          ValExp:
+            id=number_two
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            id=number_one
+  DeclareExp: id=number_five const=False type=integer
+    value:
+      ValExp:
+        val=None
   CallExp: func_id=get_five ret_id=number_five
     Args:
       None

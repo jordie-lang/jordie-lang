@@ -7,3 +7,5 @@ declare structure named address open-curly-brace
 close-curly-brace
 
 declare changeable construct named my_address of type address semicolon
+
+call functional construct named print and pass in my_address semicolon

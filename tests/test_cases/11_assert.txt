@@ -1,1 +1,6 @@
+
+call functional construct named print and pass in four semicolon
+
 assert that seven is less than six semicolon
+
+call functional construct named print and pass in five semicolon

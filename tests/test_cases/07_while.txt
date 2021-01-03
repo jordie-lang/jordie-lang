@@ -3,8 +3,18 @@ declare changeable construct named counter of type integer with value seven semi
 while counter is greater than zero or counter is equal to zero run the following open-curly-brace
     call functional construct named print and pass in counter semicolon
     set construct named counter with value counter minus one semicolon
-    comment
+close-curly-brace
+
+declare changeable construct named counter of type integer with value seven semicolon
+while counter is greater than zero or counter is equal to zero run the following open-curly-brace
+    call functional construct named print and pass in counter semicolon
+    set construct named counter with value counter minus one semicolon
     break out of loop semicolon
+close-curly-brace
+
+declare changeable construct named counter of type integer with value seven semicolon
+while counter is greater than zero or counter is equal to zero run the following open-curly-brace
+    set construct named counter with value counter minus one semicolon
     jump to next iteration semicolon
-    comment
+    call functional construct named print and pass in counter semicolon
 close-curly-brace

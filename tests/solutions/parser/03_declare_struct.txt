@@ -6,3 +6,13 @@ BodyExp:
       city: string
       state: string
       zip: integer
+  DeclareExp: id=my_address const=False type=address
+    value:
+      ValExp:
+        val=None
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            id=my_address

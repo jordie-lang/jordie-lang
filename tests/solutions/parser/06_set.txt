@@ -1,12 +1,35 @@
 BodyExp:
+  DeclareExp: id=message_one const=False type=string
+    value:
+      ValExp:
+        val=None
   SetExp: id=message_one field_id=
     value:
       ValExp:
         val=Hello World!
+  DeclareExp: id=counter const=False type=integer
+    value:
+      ValExp:
+        val=None
+  DeclareExp: id=number_one const=False type=integer
+    value:
+      ValExp:
+        val=5
   SetExp: id=counter field_id=
     value:
       ValExp:
         id=number_one
+  StructExp: id=address
+    Fields:
+      name: string
+      street: string
+      city: string
+      state: string
+      zip: integer
+  DeclareExp: id=my_address const=False type=address
+    value:
+      ValExp:
+        val=None
   SetExp: id=my_address field_id=city
     value:
       ValExp:

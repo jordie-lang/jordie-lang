@@ -170,8 +170,9 @@ op_list = [
     "times",
     "divides"
 ]
+
 # end_string = "run"
-# source_string = "number_six is greater than six and true then run the fo"
+# source_string = "number_six is greater than six and true run"
 def pop_val_exp(source_string, end_string, ln, cc):
     tmp_tokens = []
     end_index = source_string.find(end_string)
@@ -309,7 +310,6 @@ def convert_text_to_num(num_str):
     return cur_num
 
 def kw_retrieve(source_string, ln, cc, ecc):
-    #print("kw_retrieve")
     tmp_tokens = []
     tmp_tokens.append(("kw", "retrieve", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -340,7 +340,6 @@ def kw_retrieve(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_declare(source_string, ln, cc, ecc):
-    #print("kw_declare")
     tmp_tokens = []
     tmp_tokens.append(("kw", "declare", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -508,21 +507,17 @@ def kw_declare(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_set(source_string, ln, cc, ecc):
-    #print("kw_set")
     tmp_tokens = []
     tmp_tokens.append(("kw", "set", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
     
     if(tmp_elem == "construct"):
-        #tmp_tokens.append(("kw", tmp_elem))
         tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
         if(tmp_elem == "named"):
-            #tmp_tokens.append(("kw", tmp_elem))
             tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             tmp_tokens.append(("id", tmp_elem, f"{ln},{ecc}"))
             tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
             if(tmp_elem == "with"):
-                #tmp_tokens.append(("kw", tmp_elem))
                 tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
                 if(tmp_elem == "value"):
                     exp_tokens, source_string, ln, cc, ecc = pop_val_exp(source_string, eol, ln, cc)
@@ -533,11 +528,11 @@ def kw_set(source_string, ln, cc, ecc):
                     else:
                         lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'semicolon'")
                 else:
-                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
+                    lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'value'")
             else:
-                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'file'") #unsure what file means here
+                lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'with'")
         else:
-            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'from'")
+            lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
     elif(tmp_elem == "field"):
         tmp_tokens.append(("kw", tmp_elem, f"{ln},{ecc}"))
         tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -590,18 +585,16 @@ def kw_set(source_string, ln, cc, ecc):
         else:
             lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'named'")
     else:
-        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'source'") # not sure what source is here
+        lex_error(ln, ecc, f"unknown element '{tmp_elem}' - expected 'construct' or 'field'")
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_close_block(source_string, ln, cc, ecc):
-    #print("kw_close_block")
     tmp_tokens = []
     tmp_tokens.append(("kw", "close-curly-brace", f"{ln},{ecc}"))
 
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_call(source_string, ln, cc, ecc):
-    #print("kw_call")
     tmp_tokens = []
     tmp_tokens.append(("kw", "call", f"{ln},{ecc}"))
     
@@ -736,7 +729,6 @@ def kw_call(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_while(source_string, ln, cc, ecc):
-    #print("kw_while")
     tmp_tokens = []
     tmp_tokens.append(("kw", "while", f"{ln},{ecc}"))
     exp_tokens, source_string, ln, cc, ecc = pop_val_exp(source_string, "run", ln, cc)
@@ -761,7 +753,6 @@ def kw_while(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_break(source_string, ln, cc, ecc):
-    #print("kw_break")
     tmp_tokens = []
     tmp_tokens.append(("kw", "break", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -784,7 +775,6 @@ def kw_break(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_jump(source_string, ln, cc, ecc):
-    #print("kw_jump")
     tmp_tokens = []
     tmp_tokens.append(("kw", "jump", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -807,7 +797,6 @@ def kw_jump(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_for(source_string, ln, cc, ecc):
-    #print("kw_for")
     tmp_tokens = []
     tmp_tokens.append(("kw", "for", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -856,7 +845,6 @@ def kw_for(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_return(source_string, ln, cc, ecc):
-    #print("kw_return")
     tmp_tokens = []
     tmp_tokens.append(("kw", "return", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -874,7 +862,6 @@ def kw_return(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_if(source_string, ln, cc, ecc):
-    #print("kw_if")
     tmp_tokens = []
     tmp_tokens.append(("kw", "if", f"{ln},{ecc}"))
 
@@ -903,7 +890,6 @@ def kw_if(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_or(source_string, ln, cc, ecc):
-    #print("kw_or")
     tmp_tokens = []
     tmp_tokens.append(("kw", "or", f"{ln},{ecc}"))
 
@@ -933,7 +919,6 @@ def kw_or(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_try(source_string, ln, cc, ecc):
-    #print("kw_try")
     tmp_tokens = []
     tmp_tokens.append(("kw", "try", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -960,7 +945,6 @@ def kw_try(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_catch(source_string, ln, cc, ecc):
-    #print("kw_catch")
     tmp_tokens = []
     tmp_tokens.append(("kw", "catch", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -997,7 +981,6 @@ def kw_catch(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_assert(source_string, ln, cc, ecc):
-    #print("kw_assert")
     tmp_tokens = []
     tmp_tokens.append(("kw", "assert", f"{ln},{ecc}"))
     tmp_elem, source_string, ln, cc, ecc = pop_next_element(source_string, ln, cc)
@@ -1014,7 +997,6 @@ def kw_assert(source_string, ln, cc, ecc):
     return (tmp_tokens, source_string, ln, cc, ecc)
 
 def kw_exit(source_string, ln, cc, ecc):
-    #print("kw_exit")
     tmp_tokens = []
     tmp_tokens.append(("kw", "exit", f"{ln},{ecc}"))
     return (tmp_tokens, source_string, ln, cc, ecc)

@@ -1,2 +1,24 @@
 BodyExp:
-  RetrieveExp: id=fib
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            val=8
+  RetrieveExp: id=../fib
+  DeclareExp: id=result const=False type=integer
+    value:
+      ValExp:
+        val=None
+  CallExp: func_id=fib ret_id=result
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            val=8
+  CallExp: func_id=print ret_id=None
+    Args:
+      Arg: argument-one
+        value:
+          ValExp:
+            id=result

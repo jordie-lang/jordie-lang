@@ -32,6 +32,6 @@ close-curly-brace
 
 
 declare changeable construct named result of type integer semicolon
-call functional construct named fib and pass in twenty and return value to construct named result semicolon
+call functional construct named fib and pass in thirteen and return value to construct named result semicolon
 call functional construct named print and pass in result semicolon
 
