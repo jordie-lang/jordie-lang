@@ -31,7 +31,7 @@ call functional construct named sort and pass in fruits and return value to cons
 call functional construct named print and pass in fruits semicolon
 
 declare changeable construct named input of type string semicolon
-call functional construct named listen and pass in double-quote Name: double-quote and return value to construct named input semicolon
+call functional construct named listen and pass in double-quote Name:  double-quote and return value to construct named input semicolon
 call functional construct named print and pass in input semicolon
 
 declare changeable construct named var_type of type string semicolon
@@ -57,3 +57,31 @@ call functional construct named print and pass in num_7 semicolon
 declare changeable construct named num_8 of type integer semicolon
 call functional construct named get_max and pass in nums and return value to construct named num_8 semicolon
 call functional construct named print and pass in num_8 semicolon
+
+declare changeable construct named fib_source of type string semicolon
+call functional construct named get_file and pass in double-quote tests/fib.jordie double-quote and return value to construct named fib_source semicolon
+call functional construct named print and pass in fib_source semicolon
+
+declare changeable construct named file_exists of type boolean semicolon
+call functional construct named check_file and pass in double-quote test.txt double-quote and return value to construct named file_exists semicolon
+call functional construct named print and pass in file_exists semicolon
+
+declare changeable construct named msg of type string with value double-quote hello there\n double-quote semicolon
+call functional construct named write_file and pass in double-quote test.txt double-quote and msg semicolon
+
+call functional construct named check_file and pass in double-quote test.txt double-quote and return value to construct named file_exists semicolon
+call functional construct named print and pass in file_exists semicolon
+
+declare changeable construct named test_text of type string semicolon
+call functional construct named get_file and pass in double-quote test.txt double-quote and return value to construct named test_text semicolon
+call functional construct named print and pass in test_text semicolon
+
+declare changeable construct named msg_two of type string with value double-quote general kenobi!\n double-quote semicolon
+call functional construct named append_file and pass in double-quote test.txt double-quote and msg_two semicolon
+
+call functional construct named get_file and pass in double-quote test.txt double-quote and return value to construct named test_text semicolon
+call functional construct named print and pass in test_text semicolon
+
+call functional construct named delete_file and pass in double-quote test.txt double-quote semicolon
+call functional construct named check_file and pass in double-quote test.txt double-quote and return value to construct named file_exists semicolon
+call functional construct named print and pass in file_exists semicolon

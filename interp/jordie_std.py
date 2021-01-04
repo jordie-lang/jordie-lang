@@ -1,4 +1,5 @@
 import random
+import os
 
 # print value to stdout
 def jordie_print(foo):
@@ -62,3 +63,26 @@ def jordie_get_min(foo):
 # get maximum value of list
 def jordie_get_max(foo):
     return max(foo)
+
+# get data from file
+def jordie_get_file(fn):
+    with open(fn, "r") as f:
+        return f.read()
+
+# write string to a file
+def jordie_write_file(fn, data):
+    with open(fn, "w") as f:
+        f.write(data)
+
+# append string to a file
+def jordie_append_file(fn, data):
+    with open(fn, "a") as f:
+        f.write(data)
+
+# check if file exists
+def jordie_check_file(fn):
+    return os.path.exists(fn)
+
+# delete file
+def jordie_delete_file(fn):
+    os.remove(fn)

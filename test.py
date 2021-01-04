@@ -56,7 +56,7 @@ def test_parser():
                     print("##### Test case {} #####".format(fn))
                     test_case_source = tf.read()
                     tokens = interp.lexer.lex(test_case_source)
-                    ast = interp.parser.parse(tokens, "tests/test_cases/")
+                    ast = interp.parser.parse(tokens, fn, "tests/test_cases/")
 
                     test_string = ast.get_tree().rstrip().replace("\r", "")
 

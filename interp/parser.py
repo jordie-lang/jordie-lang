@@ -1711,7 +1711,12 @@ class AST:
                 "get_type": {"args": {"argument-one": "any"}, "body": None, "fnc": jordie_get_type},
                 "get_length": {"args": {"argument-one": "any"}, "body": None, "fnc": jordie_get_length},
                 "get_min": {"args": {"argument-one": "list"}, "body": None, "fnc": jordie_get_min},
-                "get_max": {"args": {"argument-one": "list"}, "body": None, "fnc": jordie_get_max}
+                "get_max": {"args": {"argument-one": "list"}, "body": None, "fnc": jordie_get_max},
+                "get_file": {"args": {"argument-one": "string"}, "body": None, "fnc": jordie_get_file},
+                "write_file": {"args": {"argument-one": "string", "argument-two": "string"}, "body": None, "fnc": jordie_write_file},
+                "append_file": {"args": {"argument-one": "string", "argument-two": "string"}, "body": None, "fnc": jordie_append_file},
+                "check_file": {"args": {"argument-one": "string"}, "body": None, "fnc": jordie_check_file},
+                "delete_file": {"args": {"argument-one": "string"}, "body": None, "fnc": jordie_delete_file}
             },
             "types": {
                 "integer": {},

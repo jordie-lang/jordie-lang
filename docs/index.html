@@ -338,6 +338,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>integer_to_float</li>
                 <ul>
                     <li>Converts an integer to a float</li>
+                    <li>Args</li>
                     <ul>
                         <li>integer - value to convert</li>
                     </ul>
@@ -347,6 +348,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>float_to_integer</li>
                 <ul>
                     <li>Converts a float to an integer</li>
+                    <li>Args</li>
                     <ul>
                         <li>float - value to convert</li>
                     </ul>
@@ -356,6 +358,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>string_to_integer</li>
                 <ul>
                     <li>Converts a string to an integer</li>
+                    <li>Args</li>
                     <ul>
                         <li>string - value to convert</li>
                     </ul>
@@ -365,6 +368,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>get_random</li>
                 <ul>
                     <li>Generate a random float from 0 to 1</li>
+                    <li>Args</li>
                     <ul>
                         <li>Nothing</li>
                     </ul>
@@ -374,6 +378,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>get_random_range</li>
                 <ul>
                     <li>Generate a random intger in a range</li>
+                    <li>Args</li>
                     <ul>
                         <li>integer - lower bound</li>
                         <li>integer - upper bound</li>
@@ -385,6 +390,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>sort</li>
                 <ul>
                     <li>Sorts a list in alphanumeric ascending order</li>
+                    <li>Args</li>
                     <ul>
                         <li>list - list to sort</li>
                     </ul>
@@ -394,6 +400,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>listen</li>
                 <ul>
                     <li>Prints prompt and waits for command line input</li>
+                    <li>Args</li>
                     <ul>
                         <li>string - prompt string</li>
                     </ul>
@@ -403,6 +410,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>get_type</li>
                 <ul>
                     <li>Gets the type of input variable</li>
+                    <li>Args</li>
                     <ul>
                         <li>any - value to get type of</li>
                     </ul>
@@ -412,6 +420,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>get_length</li>
                 <ul>
                     <li>Gets the length of a string or list</li>
+                    <li>Args</li>
                     <ul>
                         <li>string or list - value to get length of</li>
                     </ul>
@@ -421,6 +430,7 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>get_min</li>
                 <ul>
                     <li>Get the smallest value from a list</li>
+                    <li>Args</li>
                     <ul>
                         <li>list - list of items to get smallest value from</li>
                     </ul>
@@ -430,10 +440,63 @@ call functional construct named print and pass in two semicolon</pre></code>
                 <li>get_max</li>
                 <ul>
                     <li>Get the largest value from a list</li>
+                    <li>Args</li>
                     <ul>
                         <li>list - list of items to get largest value from</li>
                     </ul>
                     <li>Return - any</li>
+                </ul>
+
+                <li>get_file</li>
+                <ul>
+                    <li>Get text from a file</li>
+                    <li>Args</li>
+                    <ul>
+                        <li>string - filepath</li>
+                    </ul>
+                    <li>Return - string</li>
+                </ul>
+
+                <li>write_file</li>
+                <ul>
+                    <li>Write data to a file</li>
+                    <li>Args</li>
+                    <ul>
+                        <li>string - filepath</li>
+                        <li>string - data to write</li>
+                    </ul>
+                    <li>Return - Nothing</li>
+                </ul>
+
+                <li>append_file</li>
+                <ul>
+                    <li>Append data to a file</li>
+                    <li>Args</li>
+                    <ul>
+                        <li>string - filepath</li>
+                        <li>string - data to append</li>
+                    </ul>
+                    <li>Return - Nothing</li>
+                </ul>
+
+                <li>check_file</li>
+                <ul>
+                    <li>Check that a file exists</li>
+                    <li>Args</li>
+                    <ul>
+                        <li>string - filepath</li>
+                    </ul>
+                    <li>Return - boolean</li>
+                </ul>
+
+                <li>delete_file</li>
+                <ul>
+                    <li>Delete a file</li>
+                    <li>Args</li>
+                    <ul>
+                        <li>string - filepath</li>
+                    </ul>
+                    <li>Return - Nothing</li>
                 </ul>
             </ul>
         </dd>
