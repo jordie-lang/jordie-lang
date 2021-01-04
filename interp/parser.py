@@ -870,7 +870,7 @@ class CallExp(Exp):
                         ret_val = env
 
                         # ensure return target is changeable
-                        if envc["vars"][]self.f_ret]["const"] == False:
+                        if envc["vars"][self.f_ret]["const"] == False:
                             return ("ERROR", exec_error(self.f_ret_pos, f"can't assign to nonchangeable construct {self.f_ret}"))
 
                         # ensure return value is the correct type
