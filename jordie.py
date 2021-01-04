@@ -11,8 +11,9 @@ if __name__ == "__main__":
     with open(args.fn, "r") as f:
         source_string = f.read()
 
+    fn = args.fn.split("/")[-1]
     path = "/".join(args.fn.split("/")[:-1]) + "/"
     if path == "/":
         path = "."
     
-    interp.run(source_string, path, verbose=args.v)
+    interp.run(source_string, fn, path, verbose=args.v)

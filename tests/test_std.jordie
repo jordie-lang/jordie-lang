@@ -1,0 +1,59 @@
+declare changeable construct named num of type integer with value seven semicolon
+call functional construct named print and pass in num semicolon
+
+declare changeable construct named num_2 of type float semicolon
+call functional construct named integer_to_float and pass in num and return value to construct named num_2 semicolon
+call functional construct named print and pass in num_2 semicolon
+
+declare changeable construct named num_3 of type integer semicolon
+call functional construct named float_to_integer and pass in num_2 and return value to construct named num_3 semicolon
+call functional construct named print and pass in num_3 semicolon
+
+declare changeable construct named num_4 of type integer semicolon
+call functional construct named string_to_integer and pass in double-quote 117 double-quote and return value to construct named num_4 semicolon
+call functional construct named print and pass in num_4 semicolon
+
+declare changeable construct named num_5 of type float semicolon
+call functional construct named get_random and return value to construct named num_5 semicolon
+call functional construct named print and pass in num_5 semicolon
+
+declare changeable construct named num_6 of type integer semicolon
+call functional construct named get_random_range and pass in four and eight and two and return value to construct named num_6 semicolon
+call functional construct named print and pass in num_6 semicolon
+
+declare changeable construct named fruits of type list with value open-square-bracket
+    double-quote mango double-quote
+    double-quote grape double-quote
+    double-quote banana double-quote
+    double-quote strawberry double-quote
+    close-square-bracket semicolon
+call functional construct named sort and pass in fruits and return value to construct named fruits semicolon
+call functional construct named print and pass in fruits semicolon
+
+declare changeable construct named input of type string semicolon
+call functional construct named listen and pass in double-quote Name: double-quote and return value to construct named input semicolon
+call functional construct named print and pass in input semicolon
+
+declare changeable construct named var_type of type string semicolon
+call functional construct named get_type and pass in double-quote hello double-quote and return value to construct named var_type semicolon
+call functional construct named print and pass in var_type semicolon
+
+declare changeable construct named l of type integer semicolon
+call functional construct named get_length and pass in double-quote hello double-quote and return value to construct named l semicolon
+call functional construct named print and pass in l semicolon
+
+declare changeable construct named nums of type list with value open-square-bracket
+    five
+    seven
+    four
+    eight
+    two
+    eleven
+    close-square-bracket semicolon
+declare changeable construct named num_7 of type integer semicolon
+call functional construct named get_min and pass in nums and return value to construct named num_7 semicolon
+call functional construct named print and pass in num_7 semicolon
+
+declare changeable construct named num_8 of type integer semicolon
+call functional construct named get_max and pass in nums and return value to construct named num_8 semicolon
+call functional construct named print and pass in num_8 semicolon

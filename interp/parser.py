@@ -644,7 +644,7 @@ class RetrieveExp(Exp):
             return ("ERROR", f"module {path+fn} doesn't exist")
         
         # run lexer and parser on source
-        source_ast = parse(lexer.lex(source_string), path)
+        source_ast = parse(lexer.lex(source_string), fn, path)
 
         # get source BodyExp
         body = source_ast.get_body()
@@ -1311,6 +1311,7 @@ def parse_declare_exp(token_list, path):
         while token[:2] != ("kw", "semicolon"):
             tmp_tokens.append(token)
             token, token_list = pop_token(token_list)
+
         t_val = parse_value_tokens(tmp_tokens)
         return (DeclareExp(t_id, t_const, t_type, t_val), token_list)
 
@@ -1645,9 +1646,10 @@ def parse_next_exp(token_list, path):
     return (tmp_exp, token_list)
 
 class AST:
-    def __init__(self):
+    def __init__(self, _fn):
         self.head = BodyExp()
         self.env = {}
+        self.fn = _fn
 
     def parse_tokens(self, token_list, path):
         while(token_list):
@@ -1695,14 +1697,26 @@ class AST:
     def create_env(self):
         self.env = {
             "vars": {
-                "jordie-name": {"type": "string", "value": ""}
+                "jordie-name": {"type": "string", "const": True, "value": self.fn}
             },
             "funcs": {
-                "print": {"args": {"argument-one": "any"}, "body": None, "fnc": jordie_print}
+                "print": {"args": {"argument-one": "any"}, "body": None, "fnc": jordie_print},
+                "integer_to_float": {"args": {"argument-one": "integer"}, "body": None, "fnc": jordie_integer_to_float},
+                "float_to_integer": {"args": {"argument-one": "float"}, "body": None, "fnc": jordie_float_to_integer},
+                "string_to_integer": {"args": {"argument-one": "string"}, "body": None, "fnc": jordie_string_to_integer},
+                "get_random": {"args": {}, "body": None, "fnc": jordie_get_random},
+                "get_random_range": {"args": {"argument-one": "integer", "argument-two": "integer", "argument-three": "integer"}, "body": None, "fnc": jordie_get_random_range},
+                "sort": {"args": {"argument-one": "list"}, "body": None, "fnc": jordie_sort},
+                "listen": {"args": {"argument-one": "string"}, "body": None, "fnc": jordie_listen},
+                "get_type": {"args": {"argument-one": "any"}, "body": None, "fnc": jordie_get_type},
+                "get_length": {"args": {"argument-one": "any"}, "body": None, "fnc": jordie_get_length},
+                "get_min": {"args": {"argument-one": "list"}, "body": None, "fnc": jordie_get_min},
+                "get_max": {"args": {"argument-one": "list"}, "body": None, "fnc": jordie_get_max}
             },
             "types": {
                 "integer": {},
                 "float": {},
+                "boolean": {},
                 "string": {},
                 "list": {},
                 "dictionary": {}
@@ -1718,7 +1732,7 @@ class AST:
             execute_error(self.env)
         return self.env
     
-def parse(token_list, path):
-    ast = AST()
+def parse(token_list, fn, path):
+    ast = AST(fn)
     ast.parse_tokens(token_list, path)
     return ast

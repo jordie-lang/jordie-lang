@@ -59,10 +59,12 @@ def get_string_value(source_string, ln, cc):
 def get_list_value(source_string, ln, cc):
     end_index = source_string.find("close-square-bracket")
     list_source = source_string[:end_index]
+    
     list_val = []
-    while list_source:
+    while list_source and not list_source.isspace():
         list_item, list_source, ln, cc, ecc = pop_next_value(list_source, ln, cc)
         list_val.append(list_item)
+    
     source_string = source_string[end_index+21:]
     cc += end_index + 21
     return (list_val, source_string, ln, cc, ecc)

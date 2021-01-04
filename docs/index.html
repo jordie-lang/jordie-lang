@@ -283,6 +283,161 @@ exit
 call functional construct named print and pass in two semicolon</pre></code>
         </dd>
         <hr/>
+        <h2>Standard Library</h2>
+        <h3>Variables</h3>
+        <dd>
+            <ul>
+                <li>jordie-name</li>
+                <ul>
+                    <li>'jordie-main' for running program, module name for imported modules</li>
+                </ul>
+            </ul>
+        </dd>
+        <h3>Types</h3>
+        <dd>
+            <ul>
+                <li>string</li>
+                <ul>
+                    <li><code>double-quote hello there double-quote</code></li>
+                </ul>
+                <li>integer</li>
+                <ul>
+                    <li><code>seven-hundred-fifty-six</code></li>
+                </ul>
+                <li>float</li>
+                <ul>
+                    <li><code>thirty-one-dot-one-seven-four</code></li>
+                </ul>
+                <li>boolean</li>
+                <ul>
+                    <li><code>true</code></li>
+                </ul>
+                <li>list</li>
+                <ul>
+                    <li><code>open-square-bracket double-quote blue double-quote five false close-square-bracket</code></li>
+                </ul>
+                <li>dictionary</li>
+                <ul>
+                    <li><code>open-curly-brace key double-quote key name double-quote value double-quote value data double-quote close-curly-brace</code></li>
+                </ul>
+            </ul>
+        </dd>
+        <h3>Functions</h3>
+        <dd>
+            <ul>
+                <li>print</li>
+                <ul>
+                    <li>Print a string to stdout</li>
+                    <li>Args</li>
+                    <ul>
+                        <li>string - value to print</li>
+                    </ul>
+                    <li>Return - Nothing</li>
+                </ul>
+
+                <li>integer_to_float</li>
+                <ul>
+                    <li>Converts an integer to a float</li>
+                    <ul>
+                        <li>integer - value to convert</li>
+                    </ul>
+                    <li>Return - float</li>
+                </ul>
+
+                <li>float_to_integer</li>
+                <ul>
+                    <li>Converts a float to an integer</li>
+                    <ul>
+                        <li>float - value to convert</li>
+                    </ul>
+                    <li>Return - integer</li>
+                </ul>
+
+                <li>string_to_integer</li>
+                <ul>
+                    <li>Converts a string to an integer</li>
+                    <ul>
+                        <li>string - value to convert</li>
+                    </ul>
+                    <li>Return - integer</li>
+                </ul>
+
+                <li>get_random</li>
+                <ul>
+                    <li>Generate a random float from 0 to 1</li>
+                    <ul>
+                        <li>Nothing</li>
+                    </ul>
+                    <li>Return - float</li>
+                </ul>
+
+                <li>get_random_range</li>
+                <ul>
+                    <li>Generate a random intger in a range</li>
+                    <ul>
+                        <li>integer - lower bound</li>
+                        <li>integer - upper bound</li>
+                        <li>integer - step</li>
+                    </ul>
+                    <li>Return - integer</li>
+                </ul>
+
+                <li>sort</li>
+                <ul>
+                    <li>Sorts a list in alphanumeric ascending order</li>
+                    <ul>
+                        <li>list - list to sort</li>
+                    </ul>
+                    <li>Return - list</li>
+                </ul>
+
+                <li>listen</li>
+                <ul>
+                    <li>Prints prompt and waits for command line input</li>
+                    <ul>
+                        <li>string - prompt string</li>
+                    </ul>
+                    <li>Return - string</li>
+                </ul>
+
+                <li>get_type</li>
+                <ul>
+                    <li>Gets the type of input variable</li>
+                    <ul>
+                        <li>any - value to get type of</li>
+                    </ul>
+                    <li>Return - string</li>
+                </ul>
+
+                <li>get_length</li>
+                <ul>
+                    <li>Gets the length of a string or list</li>
+                    <ul>
+                        <li>string or list - value to get length of</li>
+                    </ul>
+                    <li>Return - integer</li>
+                </ul>
+
+                <li>get_min</li>
+                <ul>
+                    <li>Get the smallest value from a list</li>
+                    <ul>
+                        <li>list - list of items to get smallest value from</li>
+                    </ul>
+                    <li>Return - any</li>
+                </ul>
+
+                <li>get_max</li>
+                <ul>
+                    <li>Get the largest value from a list</li>
+                    <ul>
+                        <li>list - list of items to get largest value from</li>
+                    </ul>
+                    <li>Return - any</li>
+                </ul>
+            </ul>
+        </dd>
+        <hr/>
         <h2>Contributing</h2>
         <p>Just make a PR, I'm not gonna yell at people for not formatting in a specific way.</p>
         <hr/>
