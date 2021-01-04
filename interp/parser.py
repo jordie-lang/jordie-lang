@@ -733,6 +733,10 @@ class SetExp(Exp):
             # store value in the struct field
             env["vars"][self.e_id]["value"][self.e_field_id]["value"] = val
         else:
+            # ensure return target is changeable
+            if env["vars"][self.e_id]["const"] == True:
+                return ("ERROR", exec_error(self.id_pos, f"can't assign to nonchangeable construct {self.e_id}"))
+
             # check that value is the correct type for the variable
             v_type = env["vars"][self.e_id]["type"]
             if not check_jordie_types(val, v_type):
@@ -870,7 +874,7 @@ class CallExp(Exp):
                         ret_val = env
 
                         # ensure return target is changeable
-                        if envc["vars"][self.f_ret]["const"] == False:
+                        if envc["vars"][self.f_ret]["const"] == True:
                             return ("ERROR", exec_error(self.f_ret_pos, f"can't assign to nonchangeable construct {self.f_ret}"))
 
                         # ensure return value is the correct type
@@ -888,6 +892,10 @@ class CallExp(Exp):
             
             # check if the function should return a value
             if self.f_ret:
+                # ensure return target is changeable
+                if envc["vars"][self.f_ret]["const"] == True:
+                    return ("ERROR", exec_error(self.f_ret_pos, f"can't assign to nonchangeable construct {self.f_ret}"))
+
                 # ensure return value is the correct type
                 ret_type = get_jordie_type(ret_val)
                 if ret_type != env["vars"][self.f_ret]["type"]:
