@@ -8,9 +8,7 @@ All language documentation can be found at jordie-lang.org.
 
 ## Installation
 
-Install using command `pip install jordie-lang`
-
-Alternatively, download the source here and run the command `python install.py`
+Download the source here and run the command `sudo ./install.sh`
 
 ## Contributing
 
