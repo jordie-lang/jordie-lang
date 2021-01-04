@@ -1,3 +1,6 @@
+# remove current source
+rm -r /usr/lib/jordie-lang
+
 # create jordie-lang directory in /usr/lib
 mkdir /usr/lib/jordie-lang
 
