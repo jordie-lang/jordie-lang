@@ -869,6 +869,10 @@ class CallExp(Exp):
                         # return value replaces environment
                         ret_val = env
 
+                        # ensure return target is changeable
+                        if envc["vars"][]self.f_ret]["const"] == False:
+                            return ("ERROR", exec_error(self.f_ret_pos, f"can't assign to nonchangeable construct {self.f_ret}"))
+
                         # ensure return value is the correct type
                         ret_type = get_jordie_type(ret_val)
                         if ret_type != envc["vars"][self.f_ret]["type"]:
