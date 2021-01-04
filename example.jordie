@@ -1,0 +1,8 @@
+
+declare changeable construct named var of type integer with value seven semicolon
+
+call functional construct named print and pass in var semicolon
+
+if var is greater than four run the following open-curly-brace
+    call functional construct named print and pass in double-quote the condition was true double-quote semicolon
+close-curly-brace

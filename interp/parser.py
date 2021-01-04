@@ -1500,8 +1500,8 @@ def parse_if_exp(token_list, path):
 
     conds.append(cond_exp)
     bodys.append(body_exp)
-    
-    while(token_list[0][:2] == ("kw", "or")):
+
+    while(token_list and token_list[0][:2] == ("kw", "or")):
         token, token_list = pop_token(token_list)
         if not token[:2] == ("kw", "or"):
             parse_error(token[2], f"unexpected token {token}, expected ('kw', 'or')")
