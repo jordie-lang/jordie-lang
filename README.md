@@ -16,7 +16,7 @@ Alternatively, download the source here and run the command `python install.py`
 
 Not sure how far i'm going to develop this, but if you find it interesting feel free to help develop further. Looking forward to working with you!
 
-Specific guidelines on contributing available at jordie-lang.org/contributing.
+Specific guidelines on contributing available at jordie-lang.org.
 
 ## License
 

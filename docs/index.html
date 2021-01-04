@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>jordie-lang</title>
+    </head>
+    <body>
+        <hr/>
+        <h1>jordie-lang</h1>
+        <p>This is jordie-lang, your last stop shop for the best programming language. Ever.</p>
+        <ul>
+            <li>Interpreted</li>
+            <li>Statically Typed</li>
+            <li><strong>VERBOSE</strong></li>
+            <li>Like, really <em>VERBOSE</em></li>
+        </ul>
+        <p>jordie-lang cares about giving full context to the user, but why bother writing documentation when your code is the documentation!</p>
+        <p>People talk a lot about self documenting code, here at jordie-lang we don't give you a choice!</p>
+        <p>Source on <a href="https://github.com/jordie-lang/jordie-lang">Github</a></p>
+        <p>jordie-lang uses lowercase letters for its keywords, and at least one space of seperation for each keyword. Other than that, you can have any extra whitespace you want to make it look nicer. Both tabs and spaces are accepted in jordie-lang.</p>
+        <hr/>
+        <h2>Example</h2>
+        <p>The following is an example of the Fibonacci sequence running in jordie-lang.</p>
+        <h3>Code</h3>
+        <code><pre>comment
+
+Fibonacci 
+
+filename: fib.jordie
+
+comment
+
+
+declare functional construct named fib which returns type integer and receives type integer open-curly-brace
+declare changeable construct named n of type integer with value argument-one semicolon
+    if n is less than zero run the following open-curly-brace
+    call functional construct named print and pass in double-quote Error Incorrect Input double-quote semicolon
+    exit
+close-curly-brace
+or if n is equal to zero run the following open-curly-brace
+    return value zero semicolon
+close-curly-brace
+or if n is equal to one run the following open-curly-brace
+    return value one semicolon
+close-curly-brace
+or run the following open-curly-brace
+    declare changeable construct named return_value_one of type integer semicolon
+    declare changeable construct named return_value_two of type integer semicolon
+    set construct named n with value n minus one semicolon
+    call functional construct named fib and pass in n and return value to construct named return_value_one semicolon
+    set construct named n with value n minus one semicolon
+    call functional construct named fib and pass in n and return value to construct named return_value_two semicolon
+    declare changeable construct named return_value of type integer semicolon
+    set construct named return_value with value return_value_one plus return_value_two semicolon
+    return value return_value semicolon
+close-curly-brace
+close-curly-brace
+
+
+declare changeable construct named result of type integer semicolon
+call functional construct named fib and pass in thirteen and return value to construct named result semicolon
+call functional construct named print and pass in result semicolon
+        </pre></code>
+        <h3>Execution</h3>
+        <code>$ jordie fib.jordie</code>
+        <h3>Output</h3>
+        <code>$ 233</code>
+        <p></p>
+        <hr/>
+        <h2>Syntax</h2>
+        <h3>Statements</h3>
+        <ul>
+            <li><a href="#retrieve">retrieve</a></li>
+            <li><a href="#declare">declare</a></li>
+            <li><a href="#set">set</a></li>
+            <li><a href="#call">call</a></li>
+            <li><a href="#while">while</a></li>
+            <li><a href="#for">for</a></li>
+            <li><a href="#break">break</a></li>
+            <li><a href="#jump">jump</a></li>
+            <li><a href="#return">return</a></li>
+            <li><a href="#if">if</a></li>
+            <li><a href="#try">try</a></li>
+            <li><a href="#assert">assert</a></li>
+            <li><a href="#exit">exit</a></li>
+        </ul>
+        <br/>
+        <h3 id="retrieve">retrieve</h3>
+        <dd>
+            <p>Include code from another file, runs the code and adds it to the environment.</p>
+            <code><pre>retrieve source from file named fib semicolon</pre></code>
+            <p>Jordie files are assumed to have a '.jordie' file extension. If '.jordie' isn't the last part of the module name it will be added. File paths can also be used.</p>
+        </dd>
+        <h3 id="declare">declare</h3>
+        <dd>
+            <p>Create constructs. Can create changeables (variables), nonchangeables (constants), functionals (functions), and structures (structs).</p>
+            <p>jordie-lang supports integers, floats, strings, booleans, lists, dictionaries, and custom data types defined as structures.</p>
+            
+            <code><pre>declare changeable construct named sum of type float semicolon
+            
+declare changeable construct named counter of type integer with value zero semicolon
+
+declare nonchangeable construct named message of type string with value double-quote Hello There! double-quote semicolon
+
+declare changeable construct named fruits of type list with value open-square-bracket 
+    double-quote double-quote 
+    five 
+    six-dot-five 
+    close-square-bracket semicolon
+
+declare changeable construct named address of type dictionary with value open-curly-brace 
+    key double-quote ip double-quote value double-quote 10.1.100.1 double-quote 
+    key double-quote mac double-quote value double-quote aa:bb:cc:dd:ee:ff double-quote 
+    close-curly-brace semicolon
+
+declare structure named address open-curly-brace
+    field named name of type string semicolon
+    field named street of type string semicolon
+    field named city of type string semicolon
+    field named state of type string semicolon
+    field named zip of type integer semicolon
+close-curly-brace
+
+declare functional construct named add_numbers which returns type integer and receives type integer and type integer open-curly-brace
+    set construct named sum with value argument-one plus argument-two semicolon
+    return value sum semicolon
+close-curly-brace</pre></code>
+
+        </dd>
+        <h3 id="set">set</h3>
+        <dd>
+            <p>Modify constructs. Set values to changeables and structures.</p>
+            <code><pre>declare changeable construct named message_one of type string semicolon
+set construct named message_one with value double-quote Hello World! double-quote semicolon
+
+declare changeable construct named counter of type integer semicolon
+declare changeable construct named number_one of type integer with value five semicolon
+set construct named counter with value number_one semicolon
+
+declare structure named address open-curly-brace
+    field named name of type string semicolon
+    field named street of type string semicolon
+    field named city of type string semicolon
+    field named state of type string semicolon
+    field named zip of type integer semicolon
+close-curly-brace
+
+declare changeable construct named my_address of type address semicolon
+
+set field named city of construct named my_address with value double-quote Hoboken double-quote semicolon</pre></code>
+        </dd>
+        <h3 id="call">call</h3>
+        <dd>
+            <p>Call functionals. Can pass in values as arguments and specify a target construct to store the return value into.</p>
+<code><pre>declare functional construct named print_five which returns nothing and receives nothing open-curly-brace
+    call functional construct named print and pass in five semicolon
+close-curly-brace
+
+declare functional construct named add_numbers which returns type integer and receives type integer and type integer open-curly-brace
+    declare changeable construct named tmp of type integer semicolon
+    set construct named tmp with value argument-one plus argument-two semicolon
+    return value tmp semicolon
+close-curly-brace
+
+declare functional construct named print_two_numbers which returns nothing and receives type integer and type integer open-curly-brace
+    call functional construct named print and pass in argument-one semicolon
+    call functional construct named print and pass in argument-two semicolon
+close-curly-brace
+
+declare functional construct named get_five which returns type integer and receives nothing open-curly-brace
+    return value five semicolon
+close-curly-brace
+
+
+call functional construct named print_five semicolon
+
+declare nonchangeable construct named number_one of type integer with value five semicolon
+declare nonchangeable construct named number_two of type integer with value eight semicolon
+declare changeable construct named sum of type integer semicolon
+call functional construct named add_numbers and pass in number_one and number_two and return value to construct named sum semicolon
+call functional construct named print and pass in sum semicolon
+
+call functional construct named print_two_numbers and pass in number_one and number_two semicolon
+
+declare changeable construct named number_five of type integer semicolon
+call functional construct named get_five and return value to construct named number_five semicolon
+call functional construct named print and pass in number_five semicolon</pre></code>
+        </dd>
+        <h3 id="while">while</h3>
+        <dd>
+            <p>Loop while a condition is True.</p>
+            <code><pre>declare changeable construct named counter of type integer with value seven semicolon
+while counter is greater than zero or counter is equal to zero run the following open-curly-brace
+    call functional construct named print and pass in counter semicolon
+    set construct named counter with value counter minus one semicolon
+close-curly-brace</pre></code>
+        </dd>
+        <h3 id="for">for</h3>
+        <dd>
+            <p>Loop over the contents of a list.</p>
+<code><pre>declare changeable construct named fruits of type list with value open-square-bracket double-quote mango double-quote double-quote strawberry double-quote double-quote grapes double-quote close-square-bracket semicolon
+for every item in the construct named fruits do the following open-curly-brace
+    call functional construct named print and pass in item semicolon
+close-curly-brace</pre></code>
+        </dd>
+        <h3 id="break">break</h3>
+        <dd>
+            <p>Break out of a while or for loop.</p>
+            <code><pre>declare changeable construct named counter of type integer with value seven semicolon
+while counter is greater than zero or counter is equal to zero run the following open-curly-brace
+    call functional construct named print and pass in counter semicolon
+    set construct named counter with value counter minus one semicolon
+    break out of loop semicolon
+close-curly-brace
+
+for every item in the construct named fruits do the following open-curly-brace
+    call functional construct named print and pass in item semicolon
+    break out of loop semicolon
+close-curly-brace</pre></code>
+        </dd>
+        <h3 id="jump">jump</h3>
+        <dd>
+            <p>Skip to next iteration of a while or for loop.</p>
+            <code><pre>declare changeable construct named counter of type integer with value seven semicolon
+while counter is greater than zero or counter is equal to zero run the following open-curly-brace
+    set construct named counter with value counter minus one semicolon
+    jump to next iteration semicolon
+    call functional construct named print and pass in counter semicolon
+close-curly-brace
+
+for every item in the construct named fruits do the following open-curly-brace
+    jump to next iteration semicolon
+    call functional construct named print and pass in item semicolon
+    break out of loop semicolon
+close-curly-brace</pre></code>
+        </dd>
+        <h3 id="return">return</h3>
+        <dd>
+            <p>Return value from functional.</p>
+            <code><pre></pre></code>
+        </dd>
+        <h3 id="if">if</h3>
+        <dd>
+            <p>Check condition, run code block if True. or if statments for alternate conditions and or statement for else case.</p>
+            <code><pre>declare changeable construct named number_six of type integer with value six semicolon
+
+if number_six is less than six run the following open-curly-brace
+    call functional construct named print and pass in double-quote if was true double-quote semicolon
+close-curly-brace
+or if number_six is greater than six and true run the following open-curly-brace
+    call functional construct named print and pass in double-quote else if was true double-quote semicolon
+close-curly-brace
+or run the following open-curly-brace
+    call functional construct named print and pass in double-quote else case double-quote semicolon
+close-curly-brace</pre></code>
+        </dd>
+        <h3 id="try">try</h3>
+        <dd>
+            <p>Execute a block of code and catch any error produced.</p>
+            <code><pre>try to run the following open-curly-brace
+    call functional construct named print and pass in number_one semicolon
+close-curly-brace
+catch error named error and run the following open-curly-brace
+    call functional construct named print and pass in one semicolon
+    call functional construct named print and pass in error semicolon
+close-curly-brace</pre></code>
+        </dd>
+        <h3 id="assert">assert</h3>
+        <dd>
+            <p>Ensure a condition is True, fail if not.</p>
+            <code><pre>call functional construct named print and pass in four semicolon
+                
+assert that seven is less than six semicolon
+
+call functional construct named print and pass in five semicolon</pre></code>
+        </dd>
+        <h3 id="exit">exit</h3>
+        <dd>
+            <p>Stop execution, exit program.</p>
+            <code><pre>call functional construct named print and pass in one semicolon
+
+exit
+
+call functional construct named print and pass in two semicolon</pre></code>
+        </dd>
+        <hr/>
+        <h2>Contributing</h2>
+        <p>Just make a PR, I'm not gonna yell at people for not formatting in a specific way.</p>
+        <hr/>
+        <h2>License</h2>
+        <p>jordie-lang is an open source project provided under the <a href="https://github.com/jordie-lang/jordie-lang/blob/master/LICENSE">MIT License</a>.</p>
+    </body>
+</html>
