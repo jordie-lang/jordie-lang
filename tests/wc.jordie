@@ -1,0 +1,38 @@
+comment
+
+WC - basically a jordie equivalent of `wc -l`
+
+comment
+
+
+declare functional construct named count_lines which returns type integer and receives type string open-curly-brace
+    set construct named file_name with value argument-one semicolon
+
+    declare changeable construct named file_contents of type string semicolon
+
+    call functional construct named get_file and pass in file_name and return value to construct named file_contents semicolon
+
+    declare changeable construct named string_list of type list semicolon
+
+    call functional construct named string_to_list and pass in file_contents and return value to construct named string_list semicolon
+
+    declare changeable construct named line_count of type integer with value zero semicolon
+
+    for every item in the construct named string_list do the following open-curly-brace
+        if item is equal to double-quote \n double-quote run the following open-curly-brace
+           set construct named line_count with value line_count plus one semicolon
+        close-curly-brace
+    close-curly-brace
+
+    return value line_count semicolon
+close-curly-brace
+
+
+declare changeable construct named file_name of type string semicolon
+declare changeable construct named line_number of type integer semicolon
+
+set construct named file_name with value double-quote wc.jordie double-quote semicolon
+
+call functional construct named count_lines and pass in file_name and return value to construct named line_number semicolon
+
+call functional construct named print and pass in line_number semicolon
