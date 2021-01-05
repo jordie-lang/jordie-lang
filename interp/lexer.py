@@ -52,6 +52,7 @@ def get_string_value(source_string, ln, cc):
         string_val = ""
     else:
         string_val = source_string[:end_index-1]
+        string_val = string_val.replace("\\n", "\n").replace("\\t", "\t")
     source_string = source_string[end_index+13:]
     cc += end_index + 13
     return (string_val, source_string, ln, cc, ecc)
