@@ -792,7 +792,8 @@ class WhileExp(Exp):
             cond_val, env = self.e_cond.execute(env)
             if cond_val == "ERROR":
                 return ("ERROR", env)
-        
+        for i in envc["vars"].keys():
+            envc["vars"][i] = env["vars"][i]
         return (None, envc)
 
 class CallExp(Exp): 
@@ -968,6 +969,8 @@ class ForExp(Exp):
 
                 # check for break, jump, exit, or error cases
                 if tmp_val == "BREAK":
+                    for i in envc["vars"].keys():
+                        envc["vars"][i] = env["vars"][i]
                     return (None, envc)
                 elif tmp_val == "JUMP":
                     break
@@ -978,7 +981,9 @@ class ForExp(Exp):
                 elif tmp_val == "RETURN":
                     ret_val = env
                     return ("RETURN", ret_val)
-
+        
+        for i in envc["vars"].keys():
+            envc["vars"][i] = env["vars"][i]
         return (None, envc)
 
 class FuncExp(Exp): 
@@ -1073,8 +1078,12 @@ class IfExp(Exp):
 
                     # check for break, jump, exit, or error cases
                     if tmp_val == "BREAK":
+                        for i in envc["vars"].keys():
+                            envc["vars"][i] = env["vars"][i]
                         return ("BREAK", envc)
                     elif tmp_val == "JUMP":
+                        for i in envc["vars"].keys():
+                            envc["vars"][i] = env["vars"][i]
                         return ("JUMP", envc)
                     elif tmp_val == "EXIT":
                         return ("EXIT", envc)
@@ -1083,7 +1092,9 @@ class IfExp(Exp):
                     elif tmp_val == "RETURN":
                         ret_val = env
                         return ("RETURN", ret_val)
-                    
+                
+                for i in envc["vars"].keys():
+                    envc["vars"][i] = env["vars"][i]
                 return (None, envc)
         
         # if none of the conditions are true, check for an else case
@@ -1097,8 +1108,12 @@ class IfExp(Exp):
                 
                 # check for break, jump, exit, or error cases
                 if tmp_val == "BREAK":
+                    for i in envc["vars"].keys():
+                        envc["vars"][i] = env["vars"][i]
                     return ("BREAK", envc)
                 elif tmp_val == "JUMP":
+                    for i in envc["vars"].keys():
+                        envc["vars"][i] = env["vars"][i]
                     return ("JUMP", envc)
                 elif tmp_val == "EXIT":
                     return ("EXIT", envc)
@@ -1107,7 +1122,8 @@ class IfExp(Exp):
                 elif tmp_val == "RETURN":
                     ret_val = env
                     return ("RETURN", ret_val)
-
+        for i in envc["vars"].keys():
+            envc["vars"][i] = env["vars"][i]
         return (None, envc)
 
 class TryExp(Exp): 
@@ -1135,7 +1151,6 @@ class TryExp(Exp):
             val, env = self.e_err_body.execute(env)
             if val == "ERROR":
                 return ("ERROR", env)
-
         return (None, envc)
 
 class AssertExp(Exp): 
