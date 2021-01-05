@@ -13,6 +13,10 @@ declare changeable construct named num_4 of type integer semicolon
 call functional construct named string_to_integer and pass in double-quote 117 double-quote and return value to construct named num_4 semicolon
 call functional construct named print and pass in num_4 semicolon
 
+declare changeable construct named msg of type list semicolon
+call functional construct named string_to_list and pass in double-quote hello double-quote and return value to construct named msg semicolon
+call functional construct named print and pass in msg semicolon
+
 declare changeable construct named num_5 of type float semicolon
 call functional construct named get_random and return value to construct named num_5 semicolon
 call functional construct named print and pass in num_5 semicolon

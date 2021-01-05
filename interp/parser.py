@@ -1704,6 +1704,7 @@ class AST:
                 "integer_to_float": {"args": {"argument-one": "integer"}, "body": None, "fnc": jordie_integer_to_float},
                 "float_to_integer": {"args": {"argument-one": "float"}, "body": None, "fnc": jordie_float_to_integer},
                 "string_to_integer": {"args": {"argument-one": "string"}, "body": None, "fnc": jordie_string_to_integer},
+                "string_to_list": {"args": {"argument-one": "string"}, "body": None, "fnc": jordie_string_to_list},
                 "get_random": {"args": {}, "body": None, "fnc": jordie_get_random},
                 "get_random_range": {"args": {"argument-one": "integer", "argument-two": "integer", "argument-three": "integer"}, "body": None, "fnc": jordie_get_random_range},
                 "sort": {"args": {"argument-one": "list"}, "body": None, "fnc": jordie_sort},

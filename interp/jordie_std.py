@@ -17,6 +17,10 @@ def jordie_float_to_integer(foo):
 def jordie_string_to_integer(foo):
     return int(foo)
 
+# converts a string into a list
+def jordie_string_to_list(foo):
+    return list(foo)
+
 # get random float from 0 to 1
 def jordie_get_random():
     return random.random()
